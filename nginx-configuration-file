@@ -15,6 +15,7 @@ server {
 	location /media/ {
 		root /home/www-data/groupXX/;
 		
+		# FIXME: Remove this, remote code execution (OTG-INPVAL-013)
 		location ~ (\.py|\.sh) {
 			gzip off;
 			fastcgi_pass unix:/var/run/fcgiwrap.socket;
