@@ -22,9 +22,11 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 # See https://docs.djangoproject.com/en/2.0/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
+# FIXME: replace
 SECRET_KEY = '$n%^#g%qx#82w6t^dvjqwv)q*1cy+fwh1ohku7-rbjqcei2^jr'
 
 # SECURITY WARNING: don't run with debug turned on in production!
+# FIXME: Set to False
 DEBUG = True
 
 ALLOWED_HOSTS = ['127.0.0.1', 'localhost', '0.0.0.0']
@@ -54,6 +56,7 @@ MIDDLEWARE = [
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
+    # FIXME: Remove, server2 header, etc
     'sec.middleware.InformationMiddleware',
 ]
 
@@ -92,6 +95,7 @@ DATABASES = {
 
 
 PASSWORD_HASHERS = [
+        # FIXME: Rewrite
     "user.passwords.CustomMD5PasswordHasher"
 ]
 
