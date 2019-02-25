@@ -22,11 +22,16 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 # See https://docs.djangoproject.com/en/2.0/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-# FIXME: replace
+# FIXME: Replace in production
 SECRET_KEY = '$n%^#g%qx#82w6t^dvjqwv)q*1cy+fwh1ohku7-rbjqcei2^jr'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-# FIXME: Set to False
+# FIXME: Security Misconfiguration - Set to False in production
+"""
+The application is running in debug mode, meaning that an attacker
+can gain valuable information from the stack traces shown when
+an internal server error occurs.
+"""
 DEBUG = True
 
 ALLOWED_HOSTS = ['127.0.0.1', 'localhost', '0.0.0.0']
@@ -49,6 +54,13 @@ INSTALLED_APPS = [
     'payment.apps.PaymentConfig',
 ]
 
+# FIXME: Clickjacking - Add X-Frame-Options AND other missing headers (see report)
+# TODO: https://docs.djangoproject.com/en/2.1/ref/clickjacking/
+"""
+The page is vulnerable to clickjacking. So, malicious sites can embed the page
+in an iframe and lure users into performing actions they would not normally due.
+Such as give permissions on their tasks to the attacker.
+"""
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'sec.middleware.SimpleSessionMiddleware',
@@ -56,7 +68,7 @@ MIDDLEWARE = [
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
-    # FIXME: Remove, server2 header, etc
+    # FIXME: Security Misconfiguration - Remove, server2 header, etc. in production
     'sec.middleware.InformationMiddleware',
 ]
 
@@ -95,7 +107,13 @@ DATABASES = {
 
 
 PASSWORD_HASHERS = [
-        # FIXME: Rewrite
+    # FIXME: Insecure Password Hashing - Static salt (OTG-CRYPST-004?)
+    # TODO: https://docs.djangoproject.com/en/2.1/topics/auth/passwords/
+    # TODO: Use PBKDF2 instead.
+    """
+    The password hashing algorithm used on the server is severely insecure. It
+    is both using MD5 and a static salt.
+    """
     "user.passwords.CustomMD5PasswordHasher"
 ]
 
@@ -120,6 +138,12 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/2.0/howto/static-files/
 STATIC_URL = '/static/'
 STATIC_ROOT = os.path.join(BASE_DIR, "static")
+# FIXME: Broken Access Control - Private media storage
+# TODO: Lookup django-private-storage or django-filer
+"""
+Users may open uploaded project files that they do not have permissions for, by
+entering the URL directly.
+"""
 MEDIA_ROOT = os.path.join(BASE_DIR, "media")
 MEDIA_URL = "/media/"
 

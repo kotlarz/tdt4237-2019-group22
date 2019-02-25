@@ -13,19 +13,44 @@ class IndexView(TemplateView):
     template_name = "sec/base.html"
 
 
+# FIXME: No Session Expiration - Invalidate session on logout
+"""
+Sessions have virtually no expiration (~70 years).
+Neither is the session invalidated on logout.
+"""
 def logout(request):
     request.session = SessionStore()
     return HttpResponseRedirect(reverse_lazy("home"))
 
 
+# FIXME: No Session Renewal - Rewnew on login
+"""
+Sessions are not renewed on login. In addition, the same session id is shared
+between all sessions for a single user. This means that, together with no session
+expiration, if an attacker gains access to the session of a user, the attacker
+will have permanent access to the user
+"""
 class LoginView(FormView):
     form_class = LoginForm
     template_name = "user/login.html"
     success_url = reverse_lazy("home")
 
+    # FIXME: No Login Throttling/No Lockout Mechanism
+    # TODO: Lookup django-axes or django-ratelimit.
+    """
+    Neither login throttling, nor a lockout mechanism is implemented.
+    Making it very simple for an attacker to perform brute force attacks
+    on the login page.
+    """
     def form_valid(self, form):
         try:
             password = make_password(form.cleaned_data["password"])
+            # FIXME: SQL Injection - Rewrite to use proper model lookup
+            """
+            The login page is vulnerable to SQL injections.
+            An attacker may for example login to user with username “admin”
+            by entering admin’-- in the username field.
+            """
             user = User.objects.raw("SELECT * FROM auth_user WHERE username='" + form.cleaned_data[
             "username"] + "' AND password='" + password + "';")[0]
             login(self.request, user)
@@ -41,6 +66,13 @@ class SignupView(CreateView):
     success_url = reverse_lazy("home")
 
     def form_valid(self, form):
+        # FIXME: No Password Policies - Set at least a min length on password.
+        # TODO: Implement zxcvbn? https://blogs.dropbox.com/tech/2012/04/zxcvbn-realistic-password-strength-estimation/
+        """
+        When a user registers, there are no restrictions on the
+        passwords a user can have. Meaning that users may select
+        very vulnerable password, such as a single letter.
+        """
         user = form.save()
         user.profile.company = form.cleaned_data.get("company")
         user.profile.categories.add(*form.cleaned_data["categories"])

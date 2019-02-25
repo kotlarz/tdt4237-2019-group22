@@ -15,7 +15,11 @@ server {
 	location /media/ {
 		root /home/www-data/group22/;
 		
-		# FIXME: Remove this, remote code execution (OTG-INPVAL-013)
+		# FIXME: Malicious file uploads - Remove this location block
+        # When accessing either a bash file or a python file that has been uploaded,
+        # the file will be executed. This allows for arbitrary code execution 
+        # on the server. Which may allow root access to the server to privilege
+        # escalation on the server.
 		location ~ (\.py|\.sh) {
 			gzip off;
 			fastcgi_pass unix:/var/run/fcgiwrap.socket;

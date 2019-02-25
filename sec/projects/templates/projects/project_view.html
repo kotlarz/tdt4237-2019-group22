@@ -13,7 +13,8 @@
 
     <p>Project total budget: {{ total_budget }}</p>
     <h3>Description</h3>
-    # FIXME: Remove autoescape 
+    # FIXME: XSS - Remove autoescape 
+    # It is possible to perform a stored cross site scripting attack on the project description field.
     {% autoescape off %}
         <p class="project-description">{{ project.description }}</p>
     {% endautoescape %}

@@ -9,6 +9,7 @@ from django.core.exceptions import SuspiciousOperation
 from django.utils.cache import patch_vary_headers
 
 
+# FIXME: Security Misconfiguration - Remove, server2 header, etc. in production
 class InformationMiddleware:
 
     def __init__(self, get_response):
@@ -21,6 +22,11 @@ class InformationMiddleware:
         return response
 
 
+# FIXME: No Session Expiration - Set a proper max_age
+"""
+Sessions have virtually no expiration (~70 years).
+Neither is the session invalidated on logout.
+"""
 class SimpleSessionMiddleware(SessionMiddleware):
 
     def process_response(self, request, response):

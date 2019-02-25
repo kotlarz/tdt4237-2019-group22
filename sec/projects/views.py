@@ -127,6 +127,20 @@ def project_view(request, project_id):
 
 
 @login_required
+
+# FIXME: Malicious file uploads - Limit file types that can be uploaded?
+"""
+When accessing either a bash file or a python file that has been uploaded,
+the file will be executed. This allows for arbitrary code execution
+on the server. Which may allow root access to the server to privilege
+escalation on the server.
+"""
+# FIXME: Broken Access Control - Private media storage
+# TODO: Lookup django-private-storage or django-filer
+"""
+Users may open uploaded project files that they do not have permissions for, by
+entering the URL directly.
+"""
 def upload_file_to_task(request, project_id, task_id):
     project = Project.objects.get(pk=project_id)
     task = Task.objects.get(pk=task_id)
@@ -155,7 +169,7 @@ def upload_file_to_task(request, project_id, task_id):
                     task_file.save()
 
                     st = os.stat(task_file.file.path)
-                    os.chmod(task_file.file.path, st.st_mode | stat.S_IEXEC) 
+                    os.chmod(task_file.file.path, st.st_mode | stat.S_IEXEC)
 
                     if request.user.profile != project.user and request.user.profile != accepted_task_offer.offerer:
                         teams = request.user.profile.teams.filter(task__id=task.id)
@@ -182,7 +196,6 @@ def upload_file_to_task(request, project_id, task_id):
             }
         )
     return redirect('/user/login')
-
 
 def get_user_task_permissions(user, task):
     if user == task.project.user.user:
@@ -226,6 +239,18 @@ def get_user_task_permissions(user, task):
     return user_permissions
 
 
+# FIXME: Sensitive Data Exposure - Only list related users
+"""
+The header of each page leaks the password of the currently
+logged in user in a comment. Also, the form for giving
+permissions, leaks a list of all the users. This
+together with the SQL Injection, allows the attacker to login
+to all users.
+Note: The server is also running over HTTP instead of HTTPS
+which exposes information in-flight between the server and
+client. Since we are responsible for the hosting, this is not
+something you will have to fix.
+"""
 @login_required
 def task_view(request, project_id, task_id):
     user = request.user
@@ -338,6 +363,11 @@ def task_view(request, project_id, task_id):
 
 
 @login_required
+# FIXME: CSRF - Remove @csrf_exempt
+"""
+The form for giving permissions for any task does not perform a CSRF check,
+meaning it is vulnerable to CSRF attacks.
+"""
 @csrf_exempt
 def task_permissions(request, project_id, task_id):
     user = request.user
@@ -377,6 +407,11 @@ def task_permissions(request, project_id, task_id):
     return redirect('task_view', project_id=project_id, task_id=task_id)
 
 
+# FIXME: Missing Function Level Access Control
+"""
+The delete functionality for a file does not check for permissions,
+which means that any user may delete any of the files uploaded to the page.
+"""
 @login_required
 def delete_file(request, file_id):
     f = TaskFile.objects.get(pk=file_id)
