@@ -1,0 +1,32 @@
+version: "3"
+
+services:
+  nginx:
+    image: nginx
+    ports:
+      - "40XX:40XX"
+    expose:
+      - "40XX"
+    networks:
+      - sec
+    volumes:
+      - ./nginx-configuration-file:/etc/nginx/conf.d/default.conf
+      -  ./static:/home/www-data/groupXX/static
+      -  ./media:/home/www-data/groupXX/media
+
+  sec:
+    build: .
+    image: sec
+    ports:
+      - "80XX:80XX"
+    expose:
+      - "80XX"
+    networks:
+      - sec
+    volumes:
+      - ./sec:/usr/src/app/sec
+      - ./static:/usr/src/app/sec/static
+      - ./media:/usr/src/app/sec/media
+
+networks:
+  sec:

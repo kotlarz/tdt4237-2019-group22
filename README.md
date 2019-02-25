@@ -11,6 +11,13 @@ Create a virtualenv https://docs.python-guide.org/dev/virtualenvs/
 
 ## Local setup
 
+### Setup with Docker
+Install Docker and Docker Compose if you haven't already done so.
+
+Clone the project to your machine.
+
+Run `docker-compose up` inside the main folder.
+
 ### Installation with examples for ubuntu. Windows and OSX is mostly the same
 
 Fork the project and clone it to your machine.
