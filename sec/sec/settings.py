@@ -61,6 +61,7 @@ The page is vulnerable to clickjacking. So, malicious sites can embed the page
 in an iframe and lure users into performing actions they would not normally due.
 Such as give permissions on their tasks to the attacker.
 """
+# FIXME: Security Misconfiguration - Remove, server2 header, etc. in production (InformationMiddleware)
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'sec.middleware.SimpleSessionMiddleware',
@@ -68,7 +69,6 @@ MIDDLEWARE = [
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
-    # FIXME: Security Misconfiguration - Remove, server2 header, etc. in production
     'sec.middleware.InformationMiddleware',
 ]
 

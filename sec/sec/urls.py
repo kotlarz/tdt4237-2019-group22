@@ -4,9 +4,9 @@ from django.urls import include, path
 
 from sec import settings
 
+# FIXME: disable /admin in prod
 urlpatterns = [
     path('', include('home.urls')),
-    # FIXME: disable in prod
     path('admin/', admin.site.urls),
     path('user/', include('user.urls')),
     path('projects/', include('projects.urls')),
