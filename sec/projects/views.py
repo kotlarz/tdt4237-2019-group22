@@ -126,8 +126,6 @@ def project_view(request, project_id):
         })
 
 
-@login_required
-
 # FIXME: Malicious file uploads - Limit file types that can be uploaded?
 """
 When accessing either a bash file or a python file that has been uploaded,
@@ -141,6 +139,7 @@ escalation on the server.
 Users may open uploaded project files that they do not have permissions for, by
 entering the URL directly.
 """
+@login_required
 def upload_file_to_task(request, project_id, task_id):
     project = Project.objects.get(pk=project_id)
     task = Task.objects.get(pk=task_id)
@@ -362,13 +361,13 @@ def task_view(request, project_id, task_id):
     return redirect('/user/login')
 
 
-@login_required
 # FIXME: CSRF - Remove @csrf_exempt
 """
 The form for giving permissions for any task does not perform a CSRF check,
 meaning it is vulnerable to CSRF attacks.
 """
 @csrf_exempt
+@login_required
 def task_permissions(request, project_id, task_id):
     user = request.user
     task = Task.objects.get(pk=task_id)
