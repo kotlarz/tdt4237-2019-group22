@@ -66,13 +66,7 @@ class SignupView(CreateView):
     success_url = reverse_lazy("home")
 
     def form_valid(self, form):
-        # FIXME: No Password Policies - Set at least a min length on password.
         # TODO: Implement zxcvbn? https://blogs.dropbox.com/tech/2012/04/zxcvbn-realistic-password-strength-estimation/
-        """
-        When a user registers, there are no restrictions on the
-        passwords a user can have. Meaning that users may select
-        very vulnerable password, such as a single letter.
-        """
         user = form.save()
         user.profile.company = form.cleaned_data.get("company")
         user.profile.categories.add(*form.cleaned_data["categories"])
