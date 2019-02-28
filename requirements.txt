@@ -1,4 +1,5 @@
-Django==2.1.7
+# FIXME: Using Components With Known Vulnerabilities, upgrade to Django 2.1.7
+Django==2.0.6
 django-bootstrap4==0.0.7
 django-icons==0.2.1
 pytz==2018.9
