@@ -360,13 +360,6 @@ def task_view(request, project_id, task_id):
 
     return redirect('/user/login')
 
-
-# FIXME: CSRF - Remove @csrf_exempt
-"""
-The form for giving permissions for any task does not perform a CSRF check,
-meaning it is vulnerable to CSRF attacks.
-"""
-@csrf_exempt
 @login_required
 def task_permissions(request, project_id, task_id):
     user = request.user
