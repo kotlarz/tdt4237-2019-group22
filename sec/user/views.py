@@ -52,14 +52,7 @@ class LoginView(FormView):
     def form_valid(self, form):
         try:
             password = make_password(form.cleaned_data["password"])
-            # FIXME: SQL Injection - Rewrite to use proper model lookup
-            """
-            The login page is vulnerable to SQL injections.
-            An attacker may for example login to user with username “admin”
-            by entering admin’-- in the username field.
-            """
-            user = User.objects.raw("SELECT * FROM auth_user WHERE username='" + form.cleaned_data[
-            "username"] + "' AND password='" + password + "';")[0]
+            user = User.objects.raw("SELECT * FROM auth_user WHERE username=%s AND password=%s;", [form.cleaned_data["username"], password])[0]
             login(self.request, user)
             return super().form_valid(form)
         except IndexError:
