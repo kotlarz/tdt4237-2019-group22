@@ -28,11 +28,5 @@ class SignUpForm(UserCreationForm):
 class LoginForm(forms.Form):
     username = forms.CharField(required=True)
 
-    # FIXME: No Password Policies - Set at least a min length on password.
     # TODO: Implement zxcvbn? https://blogs.dropbox.com/tech/2012/04/zxcvbn-realistic-password-strength-estimation/
-    """
-    When a user registers, there are no restrictions on the
-    passwords a user can have. Meaning that users may select
-    very vulnerable password, such as a single letter.
-    """
     password = forms.CharField(required=True, widget=forms.TextInput(attrs={"type": "password"}))
