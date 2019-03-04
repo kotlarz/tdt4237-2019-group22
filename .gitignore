@@ -1,6 +1,4 @@
 #app
-static/
-media/
 
 # Mac
 .DS_Store
