@@ -31,9 +31,19 @@ SECRET_KEY = '$n%^#g%qx#82w6t^dvjqwv)q*1cy+fwh1ohku7-rbjqcei2^jr'
 The application is running in debug mode, meaning that an attacker
 can gain valuable information from the stack traces shown when
 an internal server error occurs.
+Update: The cookie attributes are configured insecured,
+making it easier for an attacker to steal the cookie.
 """
 DEBUG = True
 
+# FIXME: Allowed hosts
+"""
+Lists of allowed_hosts is intended to be a white-list and
+including 0.0.0.0 means that any host is accepted.
+Accepting any host is not recommend as this gives attackers the
+opportunity to make Django generate and display URL’s to users
+on arbitrary domains.
+"""
 ALLOWED_HOSTS = ['127.0.0.1', 'localhost', '0.0.0.0']
 
 # Application definition
@@ -146,6 +156,16 @@ entering the URL directly.
 """
 MEDIA_ROOT = os.path.join(BASE_DIR, "media")
 MEDIA_URL = "/media/"
+
+
+# FIXME: MIME-Type sniffing vulnerability:
+# TODO: https://docs.djangoproject.com/en/dev/ref/settings/#secure-content-type-nosniff
+"""
+It is possible for an attacker to leverage MIME sniffing to determine a different file type
+and cause the execution of malicious script. For example, malicious file can be “translated”
+by the browser as an image jpg. Thus, browser will execute it as an HTML and therefore
+causing the execution of malicious script.
+"""
 
 
 EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'

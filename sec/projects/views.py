@@ -70,6 +70,16 @@ def new_project(request):
     return render(request, 'projects/new_project.html', {'form': form})
 
 
+# FIXME: Missing Function Level Access Control
+"""
+The delete functionality for a file does not check for permissions,
+which means that any user may delete any of the files uploaded to the page.
+Update: It is not only delete files that does not check for permissions.
+Other examples of this is; Modify task offers, create payment and read them,
+respond to deliveries, add members to a team and change team permission.
+“The application verifies that the user has authorization for the task,
+but fails to check that the delivery belongs to that task.“
+"""
 def project_view(request, project_id):
     project = Project.objects.get(pk=project_id)
     tasks = project.tasks.all()
@@ -410,6 +420,11 @@ def task_permissions(request, project_id, task_id):
 """
 The delete functionality for a file does not check for permissions,
 which means that any user may delete any of the files uploaded to the page.
+Update: It is not only delete files that does not check for permissions.
+Other examples of this is; Modify task offers, create payment and read them,
+respond to deliveries, add members to a team and change team permission.
+“The application verifies that the user has authorization for the task,
+but fails to check that the delivery belongs to that task.“
 """
 @login_required
 def delete_file(request, file_id):
