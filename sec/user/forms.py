@@ -2,9 +2,13 @@ from django import forms
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.models import User
 from projects.models import ProjectCategory
+from zxcvbn_password.fields import PasswordField, PasswordConfirmationField
 
 
 class SignUpForm(UserCreationForm):
+    password1 = PasswordField()
+    password2 = PasswordConfirmationField(confirm_with="{0}".format(password1))
+
     company = forms.CharField(max_length=30, required=False, help_text='Here you can add your company.')
     phone_number = forms.CharField(max_length=50)
 
