@@ -72,7 +72,6 @@ class SimpleSessionMiddleware(SessionMiddleware):
                 Update: The cookie attributes are configured insecured,
                 making it easier for an attacker to steal the cookie.
                 """
-                The application is running in debug mode, meaning that
                 response.set_cookie(
                     settings.SESSION_COOKIE_NAME,
                     request.session.session_key, max_age=2**31,
