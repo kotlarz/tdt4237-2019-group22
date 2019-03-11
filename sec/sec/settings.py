@@ -59,7 +59,7 @@ INSTALLED_APPS = [
 # FIXME: Security Misconfiguration - Remove, server2 header, etc. in production (InformationMiddleware)
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
-    'sec.middleware.SimpleSessionMiddleware',
+    'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
@@ -69,6 +69,8 @@ MIDDLEWARE = [
 ]
 
 X_FRAME_OPTIONS = 'DENY'
+# The session expires in one week, half of the default value
+SESSION_COOKIE_AGE = 1209600 / 2
 
 ROOT_URLCONF = 'sec.urls'
 
