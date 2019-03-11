@@ -46,7 +46,7 @@ class LoginView(FormView):
         try:
             user = authenticate(
                 username=form.cleaned_data["username"],
-                password=make_password(form.cleaned_data["password"])
+                password=form.cleaned_data["password"]
             )
             if user is not None:
                 login(self.request, user)
