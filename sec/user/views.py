@@ -1,4 +1,4 @@
-from django.contrib.auth import login
+from django.contrib.auth import authenticate, login
 from django.contrib.auth.hashers import make_password
 from django.contrib.auth.models import User
 from django.contrib.sessions.backends.cache import SessionStore
@@ -42,19 +42,19 @@ class LoginView(FormView):
     Making it very simple for an attacker to perform brute force attacks
     on the login page.
     """
-    # FIXME: Insufficient logging and monitoring (Top 10-2017 A10):
-    """
-    Exploitation of insufficient logging and monitoring is the bedrock of nearly
-    every major incident. Attackers rely on the lack of monitoring and timely
-    response to achieve their goals without being detected.
-    All group should add logging of failed login attempts.
-    """
     def form_valid(self, form):
         try:
-            password = make_password(form.cleaned_data["password"])
-            user = User.objects.raw("SELECT * FROM auth_user WHERE username=%s AND password=%s;", [form.cleaned_data["username"], password])[0]
-            login(self.request, user)
-            return super().form_valid(form)
+            user = authenticate(
+                username=form.cleaned_data["username"],
+                password=make_password(form.cleaned_data["password"])
+            )
+            if user is not None:
+                login(self.request, user)
+                return super().form_valid(form)
+            else:
+                form.add_error(None, "Provide a valid username and/or password")
+                return super().form_invalid(form)
+
         except IndexError:
             form.add_error(None, "Provide a valid username and/or password")
             return super().form_invalid(form)
