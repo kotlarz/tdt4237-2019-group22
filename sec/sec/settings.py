@@ -64,13 +64,6 @@ INSTALLED_APPS = [
     'payment.apps.PaymentConfig',
 ]
 
-# FIXME: Clickjacking - Add X-Frame-Options AND other missing headers (see report)
-# TODO: https://docs.djangoproject.com/en/2.1/ref/clickjacking/
-"""
-The page is vulnerable to clickjacking. So, malicious sites can embed the page
-in an iframe and lure users into performing actions they would not normally due.
-Such as give permissions on their tasks to the attacker.
-"""
 # FIXME: Security Misconfiguration - Remove, server2 header, etc. in production (InformationMiddleware)
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -79,8 +72,11 @@ MIDDLEWARE = [
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
+    'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'sec.middleware.InformationMiddleware',
 ]
+
+X_FRAME_OPTIONS = 'DENY'
 
 ROOT_URLCONF = 'sec.urls'
 
