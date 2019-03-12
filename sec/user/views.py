@@ -43,19 +43,14 @@ class LoginView(FormView):
     on the login page.
     """
     def form_valid(self, form):
-        try:
-            user = authenticate(
-                username=form.cleaned_data["username"],
-                password=form.cleaned_data["password"]
-            )
-            if user is not None:
-                login(self.request, user)
-                return super().form_valid(form)
-            else:
-                form.add_error(None, "Provide a valid username and/or password")
-                return super().form_invalid(form)
-
-        except IndexError:
+        user = authenticate(
+            username=form.cleaned_data["username"],
+            password=form.cleaned_data["password"]
+        )
+        if user is not None:
+            login(self.request, user)
+            return super().form_valid(form)
+        else:
             form.add_error(None, "Provide a valid username and/or password")
             return super().form_invalid(form)
 
