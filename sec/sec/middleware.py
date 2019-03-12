@@ -59,25 +59,21 @@ class SimpleSessionMiddleware(SessionMiddleware):
                 The domain cookie attribute is missing and path
                 attribute is set to the most general.
                 """
-                # FIXME: Broken Authentication - Set to True
-                """
-                The cookie is available to scripts as the HttpOnlyflag
-                is not set in the HTTP header.
-                """
-                # FIXME: Security Misconfiguration: - See Update
-                """
-                The application is running in debug mode, meaning that
-                an attacker can gain valuable information from the
-                stack traces shown when an internal server error occurs.
-                Update: The cookie attributes are configured insecured,
+
+                # FIXME: Security Misconfiguration:
+                """The cookie attributes are configured insecured,
                 making it easier for an attacker to steal the cookie.
                 """
+
+                #TODO
+                """HTTPS must be supported before setting secure=True"""
+                """Commented out max_age in order for it to expire when browser session is over"""
                 response.set_cookie(
                     settings.SESSION_COOKIE_NAME,
-                    request.session.session_key, max_age=2**31,
+                    request.session.session_key, #max_age=3600,
                     domain=settings.SESSION_COOKIE_DOMAIN,
                     path=settings.SESSION_COOKIE_PATH,
                     secure=False,
-                    httponly=False,
+                    httponly=True,
                 )
         return response
