@@ -25,18 +25,14 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 # FIXME: Replace in production
 SECRET_KEY = '$n%^#g%qx#82w6t^dvjqwv)q*1cy+fwh1ohku7-rbjqcei2^jr'
 
-# SECURITY WARNING: don't run with debug turned on in production!
-# FIXME: Security Misconfiguration - Set to False in production
-"""
-The application is running in debug mode, meaning that an attacker
-can gain valuable information from the stack traces shown when
-an internal server error occurs.
-Update: The cookie attributes are configured insecured,
-making it easier for an attacker to steal the cookie.
-"""
-DEBUG = True
 
 ALLOWED_HOSTS = ['127.0.0.1', 'localhost', 'tdt4237.idi.ntnu.no']
+
+DEBUG = False
+
+#TODO Set path and domain
+#SESSION_COOKIE_PATH='';
+#SESSION_COOKIE_DOMAIN='';
 
 # Application definition
 
