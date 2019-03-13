@@ -35,14 +35,6 @@ class LoginView(FormView):
     form_class = LoginForm
     template_name = "user/login.html"
     success_url = reverse_lazy("home")
-
-    # FIXME: No Login Throttling/No Lockout Mechanism
-    # TODO: Lookup django-axes or django-ratelimit.
-    """
-    Neither login throttling, nor a lockout mechanism is implemented.
-    Making it very simple for an attacker to perform brute force attacks
-    on the login page.
-    """
     def form_valid(self, form):
         user = authenticate(
             username=form.cleaned_data["username"],
@@ -53,13 +45,14 @@ class LoginView(FormView):
             return super().form_valid(form)
         else:
             form.add_error(None, "Provide a valid username and/or password")
-            #username=form.cleaned_data["username"]
-            #currentDT = datetime.datetime.now()
-            #log.warning(str(currentDT) + ": Login failed for user: {username}".format(username=username))
 
-            #user_login_failed.send(sender=User, request=self.request,credentials={'username': form.cleaned_data.get('username')})
-            #if(failedCount=>3): {return HttpResponse(status=403)
-            #else:
+            #Cant get failed logins to be logged with django-axes, so this is used temporarily.
+            username=form.cleaned_data["username"]
+            currentDT = datetime.datetime.now()
+            log.warning(str(currentDT) + ": Login failed for user: {username}".format(username=username))
+
+            user_login_failed.send(sender=User, request=self.request,credentials={'username': form.cleaned_data.get('username')})
+            #TODO: user is not informed s/he has been locked out unless visiting /admin. Show lockout-page.
             return super().form_invalid(form)
 
 class SignupView(CreateView):

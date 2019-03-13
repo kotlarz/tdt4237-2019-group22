@@ -46,9 +46,9 @@ INSTALLED_APPS = [
     'bootstrap4',
     'django_icons',
     'payment.apps.PaymentConfig',
-    #'axes',
+    'axes',
 ]
-"""
+
 CACHES = {
     'default': {
         'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
@@ -64,7 +64,14 @@ AUTHENTICATION_BACKENDS = [
     'axes.backends.AxesModelBackend',
     'django.contrib.auth.backends.ModelBackend',#remove this?
 ]
-"""
+
+#This sets the number of tries before being locked out, but a record is not created.
+# Write 'python3 sec/manage.py axes_reset' to reset lockout.
+AXES_FAILURE_LIMIT = 4
+
+#If login is successfull before being locked out, the counter is reset.
+AXES_RESET_ON_SUCCESS=True
+
 # FIXME: Security Misconfiguration - Remove, server2 header, etc. in production (InformationMiddleware)
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -75,8 +82,6 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
-#TODO
-"""Set x-frame-options"""
 X_FRAME_OPTIONS = 'DENY'
 # The session expires in one week, half of the default value
 SESSION_COOKIE_AGE = 1209600 / 2
