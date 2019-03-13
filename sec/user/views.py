@@ -100,18 +100,10 @@ class SignupView(CreateView):
         })
 
         to_email = form.cleaned_data.get('email')
-        # email = EmailMessage(
-        #     "Confirm email", message, to=[to_email]
-        # )
-        # email.send()
-
-        send_mail(
-            'Subject here',
-            'Here is the message.',
-            'netland.ingvild@gmail.com',
-            ['netland.ingvild@gmail.com'],
-            fail_silently=False,
+        email = EmailMessage(
+            "Confirm email", message, to=[to_email]
         )
+        email.send()
 
         return HttpResponse('Please confirm your email address to complete the registration')
 
