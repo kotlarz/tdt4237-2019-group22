@@ -5,6 +5,8 @@ from django.urls import reverse_lazy
 from django.views.generic import TemplateView, CreateView, FormView
 import logging
 import datetime
+from django.contrib.auth.signals import user_login_failed
+import axes
 
 logging.basicConfig(filename='log.txt',level=logging.WARNING)
 log = logging.getLogger()
@@ -51,9 +53,13 @@ class LoginView(FormView):
             return super().form_valid(form)
         else:
             form.add_error(None, "Provide a valid username and/or password")
-            username=form.cleaned_data["username"]
-            currentDT = datetime.datetime.now()
-            log.warning(str(currentDT) + ": Login failed for user: {username}".format(username=username))
+            #username=form.cleaned_data["username"]
+            #currentDT = datetime.datetime.now()
+            #log.warning(str(currentDT) + ": Login failed for user: {username}".format(username=username))
+
+            #user_login_failed.send(sender=User, request=self.request,credentials={'username': form.cleaned_data.get('username')})
+            #if(failedCount=>3): {return HttpResponse(status=403)
+            #else:
             return super().form_invalid(form)
 
 class SignupView(CreateView):
