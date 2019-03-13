@@ -3,6 +3,11 @@ from django.contrib.sessions.backends.cache import SessionStore
 from django.http import HttpResponseRedirect
 from django.urls import reverse_lazy
 from django.views.generic import TemplateView, CreateView, FormView
+import logging
+import datetime
+
+logging.basicConfig(filename='log.txt',level=logging.WARNING)
+log = logging.getLogger()
 
 from .forms import SignUpForm, LoginForm
 
@@ -36,13 +41,6 @@ class LoginView(FormView):
     Making it very simple for an attacker to perform brute force attacks
     on the login page.
     """
-    # FIXME: Insufficient logging and monitoring (Top 10-2017 A10):
-    """
-    Exploitation of insufficient logging and monitoring is the bedrock of nearly
-    every major incident. Attackers rely on the lack of monitoring and timely
-    response to achieve their goals without being detected.
-    All group should add logging of failed login attempts.
-    """
     def form_valid(self, form):
         user = authenticate(
             username=form.cleaned_data["username"],
@@ -53,8 +51,10 @@ class LoginView(FormView):
             return super().form_valid(form)
         else:
             form.add_error(None, "Provide a valid username and/or password")
+            username=form.cleaned_data["username"]
+            currentDT = datetime.datetime.now()
+            log.warning(str(currentDT) + ": Login failed for user: {username}".format(username=username))
             return super().form_invalid(form)
-
 
 class SignupView(CreateView):
     form_class = SignUpForm
