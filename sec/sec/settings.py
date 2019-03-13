@@ -30,9 +30,8 @@ ALLOWED_HOSTS = ['127.0.0.1', 'localhost', 'tdt4237.idi.ntnu.no']
 
 DEBUG = False
 
-#TODO Set path and domain
-#SESSION_COOKIE_PATH='';
-#SESSION_COOKIE_DOMAIN='';
+#TODO Uncomment to reactivate when not using local server
+#SESSION_COOKIE_DOMAIN='http://tdt4237.idi.ntnu.no:4022/';
 
 # Application definition
 
