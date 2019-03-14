@@ -77,3 +77,17 @@ class LoginForm(forms.Form):
 
     # TODO: Implement zxcvbn? https://blogs.dropbox.com/tech/2012/04/zxcvbn-realistic-password-strength-estimation/
     password = forms.CharField(required=True, widget=forms.TextInput(attrs={"type": "password"}))
+
+
+class ForgotPasswordForm(forms.Form):
+    email = forms.EmailField(required=True)
+
+    def clean_email(self):
+        email = self.cleaned_data.get("email")
+
+        if not User.objects.filter(email=email).exists():
+            # This is really against security rules,
+            # you should never let anyone know if a user exists or not
+            # TODO: Throttle?
+            raise ValidationError("A user with the provided email does not exists")
+        return email

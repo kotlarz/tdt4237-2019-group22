@@ -7,7 +7,7 @@ from django.urls import reverse_lazy
 from django.views.generic import TemplateView, CreateView, FormView
 
 from user.models import SecurityQuestionInter
-from .forms import SignUpForm, LoginForm
+from .forms import SignUpForm, LoginForm, ForgotPasswordForm
 
 
 class IndexView(TemplateView):
@@ -98,4 +98,14 @@ class SignupView(CreateView):
         user.save()
         login(self.request, user)
 
+        return HttpResponseRedirect(self.success_url)
+
+
+class ForgotPasswordView(FormView):
+    form_class = ForgotPasswordForm
+    template_name = "user/forgot_password.html"
+    success_url = reverse_lazy("home")
+
+    def form_valid(self, form):
+        # TODO: add logic
         return HttpResponseRedirect(self.success_url)
