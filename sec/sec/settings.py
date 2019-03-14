@@ -161,14 +161,8 @@ MEDIA_ROOT = os.path.join(BASE_DIR, "media")
 MEDIA_URL = "/media/"
 
 
-# FIXME: MIME-Type sniffing vulnerability:
-# TODO: https://docs.djangoproject.com/en/dev/ref/settings/#secure-content-type-nosniff
-"""
-It is possible for an attacker to leverage MIME sniffing to determine a different file type
-and cause the execution of malicious script. For example, malicious file can be “translated”
-by the browser as an image jpg. Thus, browser will execute it as an HTML and therefore
-causing the execution of malicious script.
-"""
+# Adds X-Content-Type-Options: nosniff
+SECURE_CONTENT_TYPE_NOSNIFF = True
 
 
 EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
