@@ -56,19 +56,7 @@
                     New project
                 </a>
                 <!--
-                    FIXME: Sensitive Data Exposure - Remove this comment
-
-                    The header of each page leaks the password of the currently
-                    logged in user in a comment. Also, the form for giving 
-                    permissions, leaks a list of all the users. This
-                    together with the SQL Injection, allows the attacker to login 
-                    to all users.
-                    Note: The server is also running over HTTP instead of HTTPS
-                    which exposes information in-flight between the server and
-                    client. Since we are responsible for the hosting, this is not
-                    something you will have to fix.
-
-                    TODO: Add settings page to allow user to change away from their current password: {{ user.password }}
+                    TODO: Add settings page to allow user to change away from their current password
                     <a role="button" href="/profile">Settings</a>
                 -->
                 <a class="btn btn-link my-2 my-sm-0" href="{% url 'logout' %}" role="button">Sign out</a>
