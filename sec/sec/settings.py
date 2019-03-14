@@ -36,15 +36,7 @@ making it easier for an attacker to steal the cookie.
 """
 DEBUG = True
 
-# FIXME: Allowed hosts
-"""
-Lists of allowed_hosts is intended to be a white-list and
-including 0.0.0.0 means that any host is accepted.
-Accepting any host is not recommend as this gives attackers the
-opportunity to make Django generate and display URL’s to users
-on arbitrary domains.
-"""
-ALLOWED_HOSTS = ['127.0.0.1', 'localhost', '0.0.0.0']
+ALLOWED_HOSTS = ['127.0.0.1', 'localhost', 'tdt4237.idi.ntnu.no']
 
 # Application definition
 
