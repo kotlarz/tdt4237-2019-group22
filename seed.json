@@ -587,5 +587,89 @@
             "content_type": 16,
             "codename": "delete_payment"
         }
+    },
+    {
+        "model": "user.securityquestion",
+        "pk": 1,
+        "fields": {
+            "question": "What was the house number and street name you lived in as a child?"
+        }
+    },
+    {
+        "model": "user.securityquestion",
+        "pk": 2,
+        "fields": {
+            "question": "What were the last four digits of your childhood telephone number?"
+        }
+    },
+    {
+        "model": "user.securityquestion",
+        "pk": 3,
+        "fields": {
+            "question": "What primary school did you attend?"
+        }
+    },
+    {
+        "model": "user.securityquestion",
+        "pk": 4,
+        "fields": {
+            "question": "In what town or city was your first full time job?"
+        }
+    },
+    {
+        "model": "user.securityquestion",
+        "pk": 5,
+        "fields": {
+            "question": "In what town or city did you meet your spouse/partner?"
+        }
+    },
+    {
+        "model": "user.securityquestion",
+        "pk": 6,
+        "fields": {
+            "question": "What is the middle name of your oldest child?"
+        }
+    },
+    {
+        "model": "user.securityquestion",
+        "pk": 7,
+        "fields": {
+            "question": "What are the last five digits of your driver's licence number?"
+        }
+    },
+    {
+        "model": "user.securityquestion",
+        "pk": 8,
+        "fields": {
+            "question": "What is your grandmother's (on your mother's side) maiden name?"
+        }
+    },
+    {
+        "model": "user.securityquestion",
+        "pk": 9,
+        "fields": {
+            "question": "What is your spouse or partner's mother's maiden name?"
+        }
+    },
+    {
+        "model": "user.securityquestion",
+        "pk": 10,
+        "fields": {
+            "question": "In what town or city did your mother and father meet?"
+        }
+    },
+    {
+        "model": "user.securityquestion",
+        "pk": 11,
+        "fields": {
+            "question": "What time of the day were you born? (hh:mm)"
+        }
+    },
+    {
+        "model": "user.securityquestion",
+        "pk": 12,
+        "fields": {
+            "question": "What time of the day was your first child born? (hh:mm)"
+        }
     }
 ]
