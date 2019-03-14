@@ -2,7 +2,7 @@
 # and avoid clickjacking http://en.wikipedia.org/wiki/Clickjacking
 # if you need to allow [i]frames, you can use SAMEORIGIN or even set an uri with ALLOW-FROM uri
 # https://developer.mozilla.org/en-US/docs/HTTP/X-Frame-Options
-add_header X-Frame-Options DENY;
+# add_header X-Frame-Options DENY;
 
 # when serving user-supplied content, include a X-Content-Type-Options: nosniff header along with the Content-Type: header,
 # to disable content-type sniffing on some browsers.
@@ -10,7 +10,7 @@ add_header X-Frame-Options DENY;
 # currently suppoorted in IE > 8 http://blogs.msdn.com/b/ie/archive/2008/09/02/ie8-security-part-vi-beta-2-update.aspx
 # http://msdn.microsoft.com/en-us/library/ie/gg622941(v=vs.85).aspx
 # 'soon' on Firefox https://bugzilla.mozilla.org/show_bug.cgi?id=471020
-add_header X-Content-Type-Options nosniff;
+# add_header X-Content-Type-Options nosniff;
 
 server {
 	listen 4022;
@@ -24,9 +24,13 @@ server {
 
 	location /static/ {
 		root /home/www-data/group22/;
+		add_header X-Frame-Options DENY;
+		add_header X-Content-Type-Options nosniff;
 	}
 
 	location /media/ {
 		root /home/www-data/group22/;
+		add_header X-Frame-Options DENY;
+		add_header X-Content-Type-Options nosniff;
 	}
 }
