@@ -6,6 +6,7 @@ from django.http import HttpResponseRedirect
 from django.urls import reverse_lazy
 from django.views.generic import TemplateView, CreateView, FormView
 
+from user.models import SecurityQuestionInter
 from .forms import SignUpForm, LoginForm
 
 
@@ -69,7 +70,29 @@ class SignupView(CreateView):
 
     def form_valid(self, form):
         # TODO: Implement zxcvbn? https://blogs.dropbox.com/tech/2012/04/zxcvbn-realistic-password-strength-estimation/
+        security_question_1 = form.cleaned_data.pop("security_question_1")
+        security_question_1_answer = form.cleaned_data.pop("security_question_1_answer")
+        security_question_2 = form.cleaned_data.pop("security_question_2")
+        security_question_2_answer = form.cleaned_data.pop("security_question_2_answer")
+        security_question_3 = form.cleaned_data.pop("security_question_3")
+        security_question_3_answer = form.cleaned_data.pop("security_question_3_answer")
+
+        security_questions = [security_question_1, security_question_2, security_question_3]
+        security_question_answers = [
+            security_question_1_answer,
+            security_question_2_answer,
+            security_question_3_answer
+        ]
+
         user = form.save()
+        for i in range(len(security_questions)):
+            security_question = security_questions[i]
+            security_question_answer = security_question_answers[i]
+            SecurityQuestionInter.objects.create(
+                profile=user.profile,
+                security_question=security_question,
+                answer=security_question_answer
+            )
         user.profile.company = form.cleaned_data.get("company")
         user.profile.categories.add(*form.cleaned_data["categories"])
         user.save()
