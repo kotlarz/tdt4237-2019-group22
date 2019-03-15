@@ -123,6 +123,22 @@
         "model": "contenttypes.contenttype",
         "pk": 16,
         "fields": {
+            "app_label": "user",
+            "model": "securityquestion"
+        }
+    },
+    {
+        "model": "contenttypes.contenttype",
+        "pk": 17,
+        "fields": {
+            "app_label": "user",
+            "model": "securityquestioninter"
+        }
+    },
+    {
+        "model": "contenttypes.contenttype",
+        "pk": 18,
+        "fields": {
             "app_label": "payment",
             "model": "payment"
         }
