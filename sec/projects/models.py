@@ -113,6 +113,9 @@ class Team(models.Model):
 def directory_path(instance, filename):
     return 'uploads/tasks/{0}/{1}'.format(instance.task.id, filename)
 
+def delivery_path(instance, filename):
+    return 'uploads/deliveries/{0}/{1}'.format(instance.task.id, filename)
+
 
 class TaskFile(models.Model):
     task = models.ForeignKey(Task, on_delete=models.CASCADE, related_name="files")
@@ -135,7 +138,7 @@ class TaskFileTeam(models.Model):
 
 class Delivery(models.Model):
     task = models.ForeignKey(Task, on_delete=models.CASCADE, related_name="delivery")
-    file = PrivateFileField(upload_to=directory_path)
+    file = PrivateFileField(upload_to=delivery_path)
     comment = models.TextField(max_length=500)
     delivery_user = models.ForeignKey(Profile, on_delete=models.CASCADE, related_name="deliveries")
     delivery_time = models.DateTimeField(auto_now=True)

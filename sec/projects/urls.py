@@ -1,4 +1,4 @@
-from django.urls import path, include
+from django.urls import path
 
 from . import views
 
@@ -11,4 +11,5 @@ urlpatterns = [
     path('<project_id>/tasks/<task_id>/permissions/', views.task_permissions, name='task_permissions'),
     path('delete_file/<file_id>', views.delete_file, name='delete_file'),
     path('uploads/tasks/<task_id>/<file>', views.TaskFileDownloadView.as_view()),
+    path('uploads/deliveries/<task_id>/<file>', views.DeliveryFileDownloadView.as_view()),
 ]

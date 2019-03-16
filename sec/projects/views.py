@@ -452,3 +452,29 @@ class TaskFileDownloadView(PrivateStorageDetailView):
         # When the object can be accessed, the file may be downloaded.
         # This overrides PRIVATE_STORAGE_AUTH_FUNCTION
         return True
+
+class DeliveryFileDownloadView(PrivateStorageDetailView):
+    model = Delivery
+    model_file_field = 'file'
+
+    def get_object(self, **kwargs):
+        # Check if user is authenticated
+        user = self.request.user
+        if  not user.is_authenticated:
+            raise Http404()
+
+        # Check if user is project owner
+        task_id = self.kwargs['task_id']
+        task = Task.objects.get(pk=task_id)
+        if user != task.project.user.user and user != task.accepted_task_offer().offerer.user:
+            raise Http404()
+
+        # Fetch and return file
+        file = self.request.path.replace("/projects/", "")
+        object = get_object_or_404(Delivery, file=file)
+        return object
+
+    def can_access_file(self, private_file):
+        # When the object can be accessed, the file may be downloaded.
+        # This overrides PRIVATE_STORAGE_AUTH_FUNCTION
+        return True
