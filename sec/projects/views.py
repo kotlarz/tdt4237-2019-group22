@@ -2,7 +2,7 @@ import os
 import stat
 
 from django.contrib.auth.decorators import login_required
-from django.http import HttpResponseRedirect
+from django.http import HttpResponseRedirect, Http404
 from django.shortcuts import render, redirect, get_object_or_404
 from django.views.generic import TemplateView
 from private_storage.views import PrivateStorageDetailView
@@ -428,11 +428,25 @@ class TaskFileDownloadView(PrivateStorageDetailView):
     model = TaskFile
     model_file_field = 'file'
 
-    def get_queryset(self):
+    def get_object(self, **kwargs):
+        # Check if user is authenticated
         user = self.request.user
-        # Make sure only certain objects can be accessed.
-        val = super().get_queryset()
-        return val
+        if  not user.is_authenticated:
+            raise Http404()
+
+        # Check if user has read access to file or read privilege
+        task_id = self.kwargs['task_id']
+        task = Task.objects.get(pk=task_id)
+        team_ids = user.profile.teams.filter(task__id=task.id).values_list('pk', flat=True)
+        has_read_file_access = TaskFileTeam.objects.get_queryset().filter(team_id__in=team_ids, read=True).exists()
+        user_permissions = get_user_task_permissions(user, task)
+        if not user_permissions['read'] and not has_read_file_access:
+            raise Http404()
+
+        # Fetch and return file
+        file = self.request.path.replace("/projects/", "")
+        object = get_object_or_404(TaskFile, file=file)
+        return object
 
     def can_access_file(self, private_file):
         # When the object can be accessed, the file may be downloaded.

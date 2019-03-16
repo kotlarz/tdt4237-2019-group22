@@ -203,9 +203,6 @@ MEDIA_URL = "/projects/"
 PRIVATE_STORAGE_ROOT = MEDIA_ROOT
 PRIVATE_STORAGE_AUTH_FUNCTION = 'private_storage.permissions.allow_staff'
 
-PRIVATE_STORAGE_SERVER = 'nginx'
-PRIVATE_STORAGE_INTERNAL_URL = '/private-x-accel-redirect/'
-
 # Adds X-Content-Type-Options: nosniff
 SECURE_CONTENT_TYPE_NOSNIFF = True
 
