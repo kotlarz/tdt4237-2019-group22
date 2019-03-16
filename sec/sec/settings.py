@@ -51,7 +51,6 @@ INSTALLED_APPS = [
     'payment.apps.PaymentConfig',
 ]
 
-# FIXME: Security Misconfiguration - Remove, server2 header, etc. in production (InformationMiddleware)
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
@@ -60,7 +59,6 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    'sec.middleware.InformationMiddleware',
 ]
 
 X_FRAME_OPTIONS = 'DENY'

@@ -9,18 +9,6 @@ from django.core.exceptions import SuspiciousOperation
 from django.utils.cache import patch_vary_headers
 
 
-class InformationMiddleware:
-
-    def __init__(self, get_response):
-        self.get_response = get_response
-
-    def __call__(self, request):
-        response = self.get_response(request)
-        response[
-            "Server2"] = f"Django/{django.get_version()} Python/{sys.version_info.major}.{sys.version_info.minor}.{sys.version_info.serial} {platform.system()}/{platform.release()}"
-        return response
-
-
 # FIXME: No Session Expiration - Set a proper max_age
 """
 Sessions have virtually no expiration (~70 years).
@@ -63,7 +51,6 @@ class SimpleSessionMiddleware(SessionMiddleware):
                 The cookie attributes are configured insecured,
                 making it easier for an attacker to steal the cookie.
                 """
-
 
                 """HTTPS must be supported before setting secure=True"""
                 """Commented out max_age in order for it to expire when browser session is over"""
