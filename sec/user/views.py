@@ -100,13 +100,12 @@ class SignupView(CreateView):
         )
         email.send()
 
-        return HttpResponse('Please confirm your email address to complete the registration')
+        return HttpResponse('Please check your email to confirm your email address. You can now close this window')
 
 
 def activate(request, uidb64, token):
     try:
         uid = force_text(urlsafe_base64_decode(uidb64))
-        print(uid)
         user = User.objects.get(pk=uid)
     except(TypeError, ValueError, OverflowError, User.DoesNotExist):
         user = None
@@ -114,7 +113,6 @@ def activate(request, uidb64, token):
         user.is_active = True
         user.save()
         login(request, user)
-        # return redirect('home')
-        return HttpResponse('Thank you for your email confirmation. Now you can login your account.')
+        return HttpResponseRedirect(reverse_lazy("home"))
     else:
         return HttpResponse('Activation link is invalid!')
