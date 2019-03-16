@@ -1,6 +1,8 @@
 from django import forms
 from django.contrib.auth.forms import UserCreationForm
+from django.contrib.auth.hashers import check_password
 from django.contrib.auth.models import User
+from django.core.exceptions import ValidationError
 from projects.models import ProjectCategory
 
 
@@ -27,6 +29,40 @@ class SignUpForm(UserCreationForm):
 
 class LoginForm(forms.Form):
     username = forms.CharField(required=True)
-
     # TODO: Implement zxcvbn? https://blogs.dropbox.com/tech/2012/04/zxcvbn-realistic-password-strength-estimation/
     password = forms.CharField(required=True, widget=forms.TextInput(attrs={"type": "password"}))
+
+    def clean(self):
+        username = self.cleaned_data.get("username")
+        password = self.cleaned_data.get("password")
+
+        user = User.objects.filter(username=username).first()
+
+
+
+        if user.temporary_password is not None:
+            if not check_password(password=password, encoded=user.temporary_password):
+                # Raise ValidationError
+
+
+
+
+
+class ResetPasswordForm(forms.Form):
+    temp_password = forms.PasswordInput(required=True)
+    new_password_1 = forms.PasswordInput(required=True)
+    new_password_2 = forms.PasswordInput(required=True)
+
+    def validate_temp_password(self):
+        #TODO: Check if temp password is correct
+
+        temp_password = self.cleaned_data.get("temp_password")
+
+        if not User.objects.filter(temp_password=temp_password) == self.temp_password:
+            raise ValidationError("The entered temporary password is wrong")
+        return True
+
+    def cross_check_new_passwords(self):
+        if not self.new_password_1 == self.new_password_2:
+            raise ValidationError("The passwords must match")
+        return True

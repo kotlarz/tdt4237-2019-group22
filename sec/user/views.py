@@ -56,7 +56,7 @@ class LoginView(FormView):
             """
             The login page is vulnerable to SQL injections.
             An attacker may for example login to user with username “admin”
-            by entering admin’-- in the username field.
+            by entering admin’-- in the u   sername field.
             """
             user = User.objects.raw("SELECT * FROM auth_user WHERE username='" + form.cleaned_data[
             "username"] + "' AND password='" + password + "';")[0]
@@ -81,3 +81,13 @@ class SignupView(CreateView):
         login(self.request, user)
 
         return HttpResponseRedirect(self.success_url)
+
+class ResetPasswordView(FormView):
+    form_class = ResetPasswordView
+    template_name = "user/reset_password.html"
+    success_url = reverse_lazy("home")
+
+    def form_valid(self, form):
+        #TODO: Add logic
+        return HttpResponseRedirect(self.success_url)
+
