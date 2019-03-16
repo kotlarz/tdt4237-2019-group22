@@ -8,7 +8,7 @@ import datetime
 from django.contrib.auth.signals import user_login_failed
 import axes
 
-logging.basicConfig(filename='log.txt',level=logging.WARNING)
+logging.basicConfig(filename='log.txt', level=logging.WARNING)
 log = logging.getLogger()
 
 from .forms import SignUpForm, LoginForm
@@ -46,13 +46,16 @@ class LoginView(FormView):
         else:
             form.add_error(None, "Provide a valid username and/or password")
 
-            #Cant get failed logins to be logged with django-axes, so this is used temporarily.
-            username=form.cleaned_data["username"]
-            currentDT = datetime.datetime.now()
-            log.warning(str(currentDT) + ": Login failed for user: {username}".format(username=username))
-
-            user_login_failed.send(sender=User, request=self.request,credentials={'username': form.cleaned_data.get('username')})
-            #TODO: user is not informed s/he has been locked out unless visiting /admin. Show lockout-page.
+            # Unable to log failed logins axes, this is used instead.
+            username = form.cleaned_data["username"]
+            current_datetime = datetime.datetime.now()
+            log.warning("{current_datetime}: Login failed for user: {username}".format(
+                current_datetime=str(current_datetime),
+                username=username))
+            user_login_failed.send(sender=User,
+                                   request=self.request,
+                                   credentials={'username': form.cleaned_data.get('username')})
+            #TODO: User is not informed s/he has been locked out unless visiting /admin. Show lockout-page.
             return super().form_invalid(form)
 
 class SignupView(CreateView):

@@ -1,6 +1,0 @@
-###EXAMPLE WARNINGS
-WARNING:root:2019-03-13 12:29:08.253402: Login failed for user: logintest1
-WARNING:root:2019-03-13 13:09:24.299506: Login failed for user: admin
-WARNING:axes.watch_login:AXES: locked out {user: 'brj', ip: '127.0.0.1', user-agent: 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_3) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/72.0.3626.109 Safari/537.36', path: '/admin/login/'} after repeated login attempts.
-###
-

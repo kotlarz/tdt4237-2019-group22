@@ -62,10 +62,10 @@ AXES_CACHE = "axes_cache"
 
 AUTHENTICATION_BACKENDS = [
     'axes.backends.AxesModelBackend',
-    'django.contrib.auth.backends.ModelBackend',#remove this?
+    'django.contrib.auth.backends.ModelBackend', #TODO: Remove if this is unnecessary.
 ]
 
-#This sets the number of tries before being locked out, but a record is not created.
+# This sets the number of tries before being locked out, but a record is not created.
 # Write 'python3 sec/manage.py axes_reset' to reset lockout.
 AXES_FAILURE_LIMIT = 4
 
