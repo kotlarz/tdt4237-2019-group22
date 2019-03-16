@@ -1,6 +1,6 @@
 from django.contrib.auth import user_logged_in
 from django.contrib.auth.hashers import make_password, check_password
-from django.contrib.auth.models import User
+from django.contrib.auth.models import AbstractUser
 from django.contrib.sessions.backends.db import SessionStore
 from django.contrib.sessions.models import Session
 from django.db import models
@@ -9,6 +9,9 @@ from django.dispatch import receiver
 
 
 # FROM: https://stackoverflow.com/questions/9763099/adding-security-questions-to-my-django-site
+from sec import settings
+
+
 class SecurityQuestion(models.Model):
     class Meta:
         db_table = 'security_questions'
@@ -16,8 +19,12 @@ class SecurityQuestion(models.Model):
     question = models.CharField(max_length=250, null=False)
 
 
+class AppUser(AbstractUser):
+    temporary_password = models.CharField(max_length=128, default=None, blank=True, null=True)
+
+
 class Profile(models.Model):
-    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='profile')
+    user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='profile')
     company = models.TextField(max_length=50, blank=True)
     phone_number = models.TextField(max_length=50, blank=True)
     street_address = models.TextField(max_length=50, blank=True)
@@ -57,7 +64,7 @@ class SecurityQuestionInter(models.Model):
         super(SecurityQuestionInter, self).save(*args, **kwargs)
 
 
-@receiver(post_save, sender=User)
+@receiver(post_save, sender=AppUser)
 def update_user_profile(sender, instance, created, **kwargs):
     if created:
         Profile.objects.create(user=instance)

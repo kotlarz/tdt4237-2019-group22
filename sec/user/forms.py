@@ -1,11 +1,10 @@
 from django import forms
 from django.contrib.auth.forms import UserCreationForm
-from django.contrib.auth.models import User
 from django.core.exceptions import ValidationError
 from django.forms.utils import ErrorList
 
 from projects.models import ProjectCategory
-from user.models import SecurityQuestion
+from user.models import SecurityQuestion, AppUser
 
 
 class SecurityQuestionChoiceField(forms.ModelChoiceField):
@@ -44,7 +43,7 @@ class SignUpForm(UserCreationForm):
     security_question_3_answer = forms.CharField(max_length=250)
 
     class Meta:
-        model = User
+        model = AppUser
         fields = ('username', 'first_name', 'last_name', 'categories', 'company', 'email',
                   'password1', 'password2', 'security_question_1', 'security_question_1_answer',
                   'security_question_2', 'security_question_2_answer', 'security_question_3',
@@ -85,7 +84,7 @@ class ForgotPasswordForm(forms.Form):
     def clean_email(self):
         email = self.cleaned_data.get("email")
 
-        if not User.objects.filter(email=email).exists():
+        if not AppUser.objects.filter(email=email).exists():
             # This is really against security rules,
             # you should never let anyone know if a user exists or not
             # TODO: Throttle?
