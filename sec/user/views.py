@@ -42,6 +42,13 @@ class LoginView(FormView):
     Making it very simple for an attacker to perform brute force attacks
     on the login page.
     """
+    # FIXME: Insufficient logging and monitoring (Top 10-2017 A10):
+    """
+    Exploitation of insufficient logging and monitoring is the bedrock of nearly
+    every major incident. Attackers rely on the lack of monitoring and timely
+    response to achieve their goals without being detected.
+    All group should add logging of failed login attempts.
+    """
     def form_valid(self, form):
         user = authenticate(
             username=form.cleaned_data["username"],
