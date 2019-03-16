@@ -11,9 +11,9 @@ from django.utils.encoding import force_bytes, force_text
 from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
 from django.core.mail import EmailMessage, send_mail
 from django.template.loader import render_to_string
+from django.conf import settings
 from formtools.wizard.views import SessionWizardView
 from user.models import SecurityQuestionInter, AppUser
-
 
 from .tokens import account_activation_token
 from .forms import SignUpForm, LoginForm, ForgotPasswordForm, ForgotPasswordSecurityQuestionsForm
@@ -86,7 +86,7 @@ class SignupView(CreateView):
 
         message = render_to_string('user/acc_active_email.html', {
             'user': user,
-            'domain': "127.0.0.1:8000",
+            'domain': settings.SITE_URL,
             'uid': urlsafe_base64_encode(force_bytes(user.pk)).decode(),
             'token': account_activation_token.make_token(user),
         })
