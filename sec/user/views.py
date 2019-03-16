@@ -1,4 +1,4 @@
-from django.contrib.auth import login
+from django.contrib.auth import authenticate, login
 from django.contrib.auth.hashers import make_password
 from django.contrib.auth.models import User
 from django.contrib.sessions.backends.cache import SessionStore
@@ -50,19 +50,14 @@ class LoginView(FormView):
     All group should add logging of failed login attempts.
     """
     def form_valid(self, form):
-        try:
-            password = make_password(form.cleaned_data["password"])
-            # FIXME: SQL Injection - Rewrite to use proper model lookup
-            """
-            The login page is vulnerable to SQL injections.
-            An attacker may for example login to user with username “admin”
-            by entering admin’-- in the username field.
-            """
-            user = User.objects.raw("SELECT * FROM auth_user WHERE username='" + form.cleaned_data[
-            "username"] + "' AND password='" + password + "';")[0]
+        user = authenticate(
+            username=form.cleaned_data["username"],
+            password=form.cleaned_data["password"]
+        )
+        if user is not None:
             login(self.request, user)
             return super().form_valid(form)
-        except IndexError:
+        else:
             form.add_error(None, "Provide a valid username and/or password")
             return super().form_invalid(form)
 
