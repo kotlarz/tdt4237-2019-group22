@@ -396,7 +396,7 @@ def task_permissions(request, project_id, task_id):
                         print("user not found")
                     return redirect('task_view', project_id=project_id, task_id=task_id)
 
-            task_permission_form = TaskPermissionForm()
+            task_permission_form = TaskPermissionForm(project=project)
             return render(
                 request,
                 'projects/task_permissions.html',

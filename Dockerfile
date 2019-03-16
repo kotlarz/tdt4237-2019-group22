@@ -1,5 +1,7 @@
 FROM alpine
 
+ENV NGINX_DIR /home/www-data/group22/
+
 RUN apk add --no-cache dos2unix
 
 WORKDIR /tmp
@@ -13,6 +15,8 @@ FROM python:3
 WORKDIR /usr/src/app
 
 COPY requirements.txt ./
+COPY static $NGINX_DIR/static
+COPY media $NGINX_DIR/media
 
 RUN pip3 install --no-cache-dir -r requirements.txt
 
