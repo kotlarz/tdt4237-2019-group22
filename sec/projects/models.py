@@ -2,6 +2,7 @@ import os
 
 from django.conf import settings
 from django.core.files.storage import FileSystemStorage
+from private_storage.fields import PrivateFileField
 from django.db import models
 
 from user.models import Profile
@@ -115,7 +116,7 @@ def directory_path(instance, filename):
 
 class TaskFile(models.Model):
     task = models.ForeignKey(Task, on_delete=models.CASCADE, related_name="files")
-    file = models.FileField(upload_to=directory_path, storage=OverwriteStorage())
+    file = PrivateFileField(upload_to=directory_path, storage=OverwriteStorage())
 
     def name(self):
         parts = self.file.path.split("/")
@@ -134,7 +135,7 @@ class TaskFileTeam(models.Model):
 
 class Delivery(models.Model):
     task = models.ForeignKey(Task, on_delete=models.CASCADE, related_name="delivery")
-    file = models.FileField(upload_to=directory_path)
+    file = PrivateFileField(upload_to=directory_path)
     comment = models.TextField(max_length=500)
     delivery_user = models.ForeignKey(Profile, on_delete=models.CASCADE, related_name="deliveries")
     delivery_time = models.DateTimeField(auto_now=True)

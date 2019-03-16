@@ -4,8 +4,8 @@ import stat
 from django.contrib.auth.decorators import login_required
 from django.http import HttpResponseRedirect
 from django.shortcuts import render, redirect, get_object_or_404
-from django.views.decorators.csrf import csrf_exempt
 from django.views.generic import TemplateView
+from private_storage.views import PrivateStorageDetailView
 
 from user.models import Profile, AppUser
 from .forms import ProjectForm, TaskFileForm, ProjectStatusForm, TaskOfferForm, TaskOfferResponseForm, \
@@ -423,3 +423,18 @@ def delete_file(request, file_id):
     f = TaskFile.objects.get(pk=file_id)
     f.delete()
     return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
+
+class TaskFileDownloadView(PrivateStorageDetailView):
+    model = TaskFile
+    model_file_field = 'file'
+
+    def get_queryset(self):
+        user = self.request.user
+        # Make sure only certain objects can be accessed.
+        val = super().get_queryset()
+        return val
+
+    def can_access_file(self, private_file):
+        # When the object can be accessed, the file may be downloaded.
+        # This overrides PRIVATE_STORAGE_AUTH_FUNCTION
+        return True

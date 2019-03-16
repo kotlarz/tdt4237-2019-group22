@@ -15,7 +15,7 @@ class ProjectForm(forms.ModelForm):
 
 
 class TaskFileForm(forms.ModelForm):
-    file = forms.FileField()
+    # file = forms.FileField()
 
     class Meta:
         model = TaskFile
@@ -72,7 +72,7 @@ class TaskPermissionForm(forms.Form):
 
 class DeliveryForm(forms.ModelForm):
     comment = forms.Textarea()
-    file = forms.FileField()
+    # file = forms.FileField()
 
     class Meta:
         model = Delivery
