@@ -49,6 +49,21 @@ class LoginView(FormView):
             return super().form_invalid(form)
 
 
+def send_activation_mail(user):
+    message = render_to_string('user/acc_active_email.html', {
+        'user': user,
+        'domain': settings.SITE_URL,
+        'uid': urlsafe_base64_encode(force_bytes(user.pk)).decode(),
+        'token': account_activation_token.make_token(user),
+    })
+
+    to_email = user.email
+    email = EmailMessage(
+        "Confirm email", message, to=[to_email]
+    )
+    email.send()
+
+
 class SignupView(CreateView):
     form_class = SignUpForm
     template_name = "user/signup.html"
@@ -84,18 +99,7 @@ class SignupView(CreateView):
         user.is_active = False
         user.save()
 
-        message = render_to_string('user/acc_active_email.html', {
-            'user': user,
-            'domain': settings.SITE_URL,
-            'uid': urlsafe_base64_encode(force_bytes(user.pk)).decode(),
-            'token': account_activation_token.make_token(user),
-        })
-
-        to_email = form.cleaned_data.get('email')
-        email = EmailMessage(
-            "Confirm email", message, to=[to_email]
-        )
-        email.send()
+        send_activation_mail(user)
 
         return HttpResponse('Please check your email to confirm your email address. You can now close this window')
 
@@ -112,7 +116,8 @@ def activate(request, uidb64, token):
         login(request, user)
         return HttpResponseRedirect(reverse_lazy("home"))
     else:
-        return HttpResponse('Activation link is invalid!')
+        send_activation_mail(user)
+        return HttpResponse('<h1>Activation link has expired!</h1> A new activation mail has been sent to your email.')
 
 
 class ForgotPasswordWizardView(SessionWizardView):
