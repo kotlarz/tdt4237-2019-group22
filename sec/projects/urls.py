@@ -14,3 +14,4 @@ urlpatterns = [
     path('uploads/tasks/<int:task_id>/<file>', login_required(views.TaskFileDownloadView.as_view())),
     path('uploads/deliveries/<int:task_id>/<file>', login_required(views.DeliveryFileDownloadView.as_view())),
 ]
+#(?P<path>.*)$

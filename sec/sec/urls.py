@@ -1,3 +1,5 @@
+import private_storage.urls
+from django.conf.urls import url
 from django.conf.urls.static import static
 from django.contrib import admin
 from django.urls import include, path
@@ -17,4 +19,6 @@ urlpatterns = [
     path('user/', include('user.urls')),
     path('projects/', include('projects.urls')),
     path('payment/', include('payment.urls')),
+    # # path('media/', include(private_storage.urls)),
+    # path('media/(?P<path>.*)$', TaskFileDownloadView.as_view()),
 ]
