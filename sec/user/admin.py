@@ -9,6 +9,7 @@ class ProfileInline(admin.StackedInline):
     model = Profile
     can_delete = False
     verbose_name_plural = 'Profile'
+    exclude = ['session']
     fk_name = 'user'
 
 
