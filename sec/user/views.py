@@ -1,13 +1,21 @@
 from axes.decorators import axes_dispatch
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.sessions.backends.cache import SessionStore
-from django.http import HttpResponseRedirect
+from django.http import HttpResponseRedirect, HttpResponse
 from django.shortcuts import render
 from django.urls import reverse_lazy
 from django.utils.decorators import method_decorator
 from django.views.generic import TemplateView, CreateView, FormView
+from django.contrib.sites.shortcuts import get_current_site
+from django.utils.encoding import force_bytes, force_text
+from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
+from django.core.mail import EmailMessage, send_mail
+from django.template.loader import render_to_string
 from formtools.wizard.views import SessionWizardView
 from user.models import SecurityQuestionInter, AppUser
+
+
+from .tokens import account_activation_token
 from .forms import SignUpForm, LoginForm, ForgotPasswordForm, ForgotPasswordSecurityQuestionsForm
 
 
@@ -73,10 +81,38 @@ class SignupView(CreateView):
             )
         user.profile.company = form.cleaned_data.get("company")
         user.profile.categories.add(*form.cleaned_data["categories"])
+        user.is_active = False
         user.save()
-        login(self.request, user)
 
-        return HttpResponseRedirect(self.success_url)
+        message = render_to_string('user/acc_active_email.html', {
+            'user': user,
+            'domain': "127.0.0.1:8000",
+            'uid': urlsafe_base64_encode(force_bytes(user.pk)).decode(),
+            'token': account_activation_token.make_token(user),
+        })
+
+        to_email = form.cleaned_data.get('email')
+        email = EmailMessage(
+            "Confirm email", message, to=[to_email]
+        )
+        email.send()
+
+        return HttpResponse('Please check your email to confirm your email address. You can now close this window')
+
+
+def activate(request, uidb64, token):
+    try:
+        uid = force_text(urlsafe_base64_decode(uidb64))
+        user = AppUser.objects.get(pk=uid)
+    except(TypeError, ValueError, OverflowError, AppUser.DoesNotExist):
+        user = None
+    if user is not None and account_activation_token.check_token(user, token):
+        user.is_active = True
+        user.save()
+        login(request, user)
+        return HttpResponseRedirect(reverse_lazy("home"))
+    else:
+        return HttpResponse('Activation link is invalid!')
 
 
 class ForgotPasswordWizardView(SessionWizardView):
