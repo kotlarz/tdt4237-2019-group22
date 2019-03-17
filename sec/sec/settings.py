@@ -9,7 +9,7 @@ https://docs.djangoproject.com/en/2.0/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/2.0/ref/settings/
 """
-
+import datetime
 import logging
 import os
 import sys
@@ -58,21 +58,46 @@ CACHES = {
     }
 }
 
-AXES_CACHE = "axes_cache"
-
 AUTHENTICATION_BACKENDS = [
     'axes.backends.AxesModelBackend',
-    'django.contrib.auth.backends.ModelBackend', #TODO: Remove if this is unnecessary.
+    'django.contrib.auth.backends.ModelBackend',
 ]
 
-# This sets the number of tries before being locked out, but a record is not created.
 # Write 'python3 sec/manage.py axes_reset' to reset lockout.
 AXES_FAILURE_LIMIT = 4
+# Lockout for 1 hours
+AXES_COOLOFF_TIME = datetime.timedelta(hours=1)
+# If login is successful before being locked out, the counter is reset.
+AXES_RESET_ON_SUCCESS = True
+AXES_CACHE = 'axes_cache'
+AXES_LOCKOUT_TEMPLATE = 'user/locked_out.html'
+# For nginx:
+AXES_PROXY_COUNT = 1
 
-#If login is successfull before being locked out, the counter is reset.
-AXES_RESET_ON_SUCCESS=True
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'handlers': {
+        'file': {
+            'level': os.getenv('DJANGO_LOG_LEVEL', 'DEBUG'),
+            'class': 'logging.FileHandler',
+            'filename': os.path.join(BASE_DIR, 'beelance.log'),
+        },
+    },
+    'loggers': {
+        'django': {
+            'handlers': ['file'],
+            'level': os.getenv('DJANGO_LOG_LEVEL', 'DEBUG'),
+            'propagate': True,
+        },
+        'axes.watch_login': {
+            'handlers': ['file'],
+            'level': os.getenv('DJANGO_LOG_LEVEL', 'DEBUG'),
+            'propagate': True,
+        },
+    },
+}
 
-# FIXME: Security Misconfiguration - Remove, server2 header, etc. in production (InformationMiddleware)
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
