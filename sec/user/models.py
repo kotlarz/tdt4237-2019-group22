@@ -23,6 +23,7 @@ class SecurityQuestion(models.Model):
 
 
 class AppUser(AbstractUser):
+    email = models.EmailField(unique=True)
     temporary_password = models.CharField(max_length=128, default=None, blank=True, null=True)
     security_questions = models.ManyToManyField(SecurityQuestion, through='SecurityQuestionInter')
 
