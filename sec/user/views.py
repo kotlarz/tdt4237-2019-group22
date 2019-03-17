@@ -1,17 +1,13 @@
 from axes.decorators import axes_dispatch
 from django.contrib.auth import authenticate, login, logout
-from django.contrib.auth.models import User
 from django.contrib.sessions.backends.cache import SessionStore
-from django.http import HttpResponseRedirect, HttpResponse
+from django.http import HttpResponseRedirect
 from django.shortcuts import render
 from django.urls import reverse_lazy
 from django.utils.decorators import method_decorator
 from django.views.generic import TemplateView, CreateView, FormView
-from django.utils.encoding import force_bytes, force_text
-from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
-from django.core.mail import EmailMessage
-from django.template.loader import render_to_string
-from django.conf import settings
+from django.utils.encoding import force_text
+from django.utils.http import urlsafe_base64_decode
 from formtools.wizard.views import SessionWizardView
 from user.models import SecurityQuestionInter, AppUser
 
@@ -19,14 +15,30 @@ from .tokens import account_activation_token
 from .forms import SignUpForm, LoginForm, ForgotPasswordForm, ForgotPasswordSecurityQuestionsForm
 
 
-class IndexView(TemplateView):
-    template_name = "sec/base.html"
-
-
 def custom_logout(request):
     logout(request)
     request.session = SessionStore()
     return HttpResponseRedirect(reverse_lazy("home"))
+
+
+def activate(request, uidb64, token):
+    try:
+        uid = force_text(urlsafe_base64_decode(uidb64))
+        user = AppUser.objects.get(pk=uid)
+    except(TypeError, ValueError, OverflowError, AppUser.DoesNotExist):
+        user = None
+    if user is not None and account_activation_token.check_token(user, token):
+        user.is_active = True
+        user.save()
+        login(request, user)
+        return HttpResponseRedirect(reverse_lazy("home"))
+    else:
+        user.send_activation_mail()
+        return render(request, 'user/activation_expired.html')
+
+
+class IndexView(TemplateView):
+    template_name = "sec/base.html"
 
 
 @method_decorator(axes_dispatch, name='dispatch')
@@ -47,18 +59,6 @@ class LoginView(FormView):
         else:
             form.add_error(None, "Provide a valid username and/or password")
             return super().form_invalid(form)
-
-
-# TODO: should be moved under AppUser.
-def send_activation_mail(user):
-    message = render_to_string('user/activation_email.html', {
-        'user': user,
-        'site_url': settings.SITE_URL,
-        'uid': urlsafe_base64_encode(force_bytes(user.pk)).decode(),
-        'token': account_activation_token.make_token(user),
-    })
-    email = EmailMessage("Activation email", message, to=[user.email])
-    email.send()
 
 
 class SignupView(CreateView):
@@ -96,25 +96,9 @@ class SignupView(CreateView):
         user.is_active = False
         user.save()
 
-        send_activation_mail(user)
+        user.send_activation_mail()
 
         return render(self.request, 'user/signup_done.html')
-
-
-def activate(request, uidb64, token):
-    try:
-        uid = force_text(urlsafe_base64_decode(uidb64))
-        user = AppUser.objects.get(pk=uid)
-    except(TypeError, ValueError, OverflowError, AppUser.DoesNotExist):
-        user = None
-    if user is not None and account_activation_token.check_token(user, token):
-        user.is_active = True
-        user.save()
-        login(request, user)
-        return HttpResponseRedirect(reverse_lazy("home"))
-    else:
-        send_activation_mail(user)
-        return render(request, 'user/activation_expired.html')
 
 
 class ForgotPasswordWizardView(SessionWizardView):
