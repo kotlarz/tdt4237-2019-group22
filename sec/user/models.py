@@ -5,14 +5,15 @@ from django.core.mail import EmailMessage
 from django.db import models
 from django.db.models.signals import post_save
 from django.dispatch import receiver
+from django.template.loader import render_to_string
+from django.utils.encoding import force_bytes
+from django.utils.http import urlsafe_base64_encode
+
+from sec import settings
+from user.tokens import account_activation_token
 
 
 # FROM: https://stackoverflow.com/questions/9763099/adding-security-questions-to-my-django-site
-from django.template.loader import render_to_string
-
-from sec import settings
-
-
 class SecurityQuestion(models.Model):
     class Meta:
         db_table = 'security_questions'
@@ -39,6 +40,16 @@ class AppUser(AbstractUser):
             'temporary_password': temporary_password
         })
         email = EmailMessage("Temporary password", message, to=[self.email])
+        email.send()
+
+    def send_activation_mail(self):
+        message = render_to_string('user/activation_email.html', {
+            'user': self,
+            'site_url': settings.SITE_URL,
+            'uid': urlsafe_base64_encode(force_bytes(self.pk)).decode(),
+            'token': account_activation_token.make_token(self),
+        })
+        email = EmailMessage("Activation email", message, to=[self.email])
         email.send()
 
 

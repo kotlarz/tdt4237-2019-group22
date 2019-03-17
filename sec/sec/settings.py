@@ -203,7 +203,14 @@ MEDIA_URL = "/media/"
 SECURE_CONTENT_TYPE_NOSNIFF = True
 
 
-EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+
+
+# Password reset token generator timeout
+PASSWORD_RESET_TIMEOUT_DAYS = 1
+
+# Site URL
+SITE_URL = "http://tdt4237.idi.ntnu.no:4022"
 
 try:
     from .local_settings import *

@@ -6,19 +6,40 @@ from django.shortcuts import render
 from django.urls import reverse_lazy
 from django.utils.decorators import method_decorator
 from django.views.generic import TemplateView, CreateView, FormView
+from django.utils.encoding import force_text
+from django.utils.http import urlsafe_base64_decode
 from formtools.wizard.views import SessionWizardView
 from user.models import SecurityQuestionInter, AppUser
+
+from .tokens import account_activation_token
 from .forms import SignUpForm, LoginForm, ForgotPasswordForm, ForgotPasswordSecurityQuestionsForm
-
-
-class IndexView(TemplateView):
-    template_name = "sec/base.html"
 
 
 def custom_logout(request):
     logout(request)
     request.session = SessionStore()
     return HttpResponseRedirect(reverse_lazy("home"))
+
+
+def activate(request, uidb64, token, backend='django.contrib.auth.backends.ModelBackend'):
+    try:
+        uid = force_text(urlsafe_base64_decode(uidb64))
+        user = AppUser.objects.get(pk=uid)
+    except(TypeError, ValueError, OverflowError, AppUser.DoesNotExist):
+        user = None
+
+    if user is not None and account_activation_token.check_token(user, token):
+        user.is_active = True
+        user.save()
+        login(request, user, backend=backend)
+        return HttpResponseRedirect(reverse_lazy("home"))
+    else:
+        user.send_activation_mail()
+        return render(request, 'user/activation_expired.html')
+
+
+class IndexView(TemplateView):
+    template_name = "sec/base.html"
 
 
 @method_decorator(axes_dispatch, name='dispatch')
@@ -73,10 +94,12 @@ class SignupView(CreateView):
             )
         user.profile.company = form.cleaned_data.get("company")
         user.profile.categories.add(*form.cleaned_data["categories"])
+        user.is_active = False
         user.save()
-        login(self.request, user)
 
-        return HttpResponseRedirect(self.success_url)
+        user.send_activation_mail()
+
+        return render(self.request, 'user/signup_done.html')
 
 
 class ForgotPasswordWizardView(SessionWizardView):
