@@ -2,11 +2,13 @@ from axes.decorators import axes_dispatch
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.sessions.backends.cache import SessionStore
 from django.http import HttpResponseRedirect
+from django.shortcuts import render
 from django.urls import reverse_lazy
 from django.utils.decorators import method_decorator
 from django.views.generic import TemplateView, CreateView, FormView
-from user.models import SecurityQuestionInter
-from .forms import SignUpForm, LoginForm, ForgotPasswordForm
+from formtools.wizard.views import SessionWizardView
+from user.models import SecurityQuestionInter, AppUser
+from .forms import SignUpForm, LoginForm, ForgotPasswordForm, ForgotPasswordSecurityQuestionsForm
 
 
 class IndexView(TemplateView):
@@ -65,7 +67,7 @@ class SignupView(CreateView):
             security_question = security_questions[i]
             security_question_answer = security_question_answers[i]
             SecurityQuestionInter.objects.create(
-                profile=user.profile,
+                user=user,
                 security_question=security_question,
                 answer=security_question_answer
             )
@@ -77,11 +79,21 @@ class SignupView(CreateView):
         return HttpResponseRedirect(self.success_url)
 
 
-class ForgotPasswordView(FormView):
-    form_class = ForgotPasswordForm
+class ForgotPasswordWizardView(SessionWizardView):
+    form_list = [ForgotPasswordForm, ForgotPasswordSecurityQuestionsForm]
     template_name = "user/forgot_password.html"
-    success_url = reverse_lazy("home")
 
-    def form_valid(self, form):
-        # TODO: add logic
-        return HttpResponseRedirect(self.success_url)
+    def done(self, form_list, **kwargs):
+        email_form = list(form_list)[0]
+        user = AppUser.objects.filter(email=email_form.cleaned_data['email']).first()
+        temporary_password = AppUser.objects.make_random_password()
+        user.set_temporary_password(temporary_password)
+        user.send_temporary_password_email(temporary_password)
+        return render(self.request, 'user/forgot_password_done.html')
+
+    def get_form_kwargs(self, step=None):
+        kwargs = {}
+        if step == '1':
+            email = self.get_cleaned_data_for_step('0')['email']
+            kwargs.update({'email': email, })
+        return kwargs

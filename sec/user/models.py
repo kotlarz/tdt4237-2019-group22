@@ -3,12 +3,15 @@ from django.contrib.auth.hashers import make_password, check_password
 from django.contrib.auth.models import AbstractUser
 from django.contrib.sessions.backends.db import SessionStore
 from django.contrib.sessions.models import Session
+from django.core.mail import EmailMessage
 from django.db import models
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 
 
 # FROM: https://stackoverflow.com/questions/9763099/adding-security-questions-to-my-django-site
+from django.template.loader import render_to_string
+
 from sec import settings
 
 
@@ -21,6 +24,23 @@ class SecurityQuestion(models.Model):
 
 class AppUser(AbstractUser):
     temporary_password = models.CharField(max_length=128, default=None, blank=True, null=True)
+    security_questions = models.ManyToManyField(SecurityQuestion, through='SecurityQuestionInter')
+
+    def set_temporary_password(self, raw_password):
+        self.temporary_password = make_password(raw_password)
+        self.save()
+
+    def check_temporary_password(self, raw_password):
+        return check_password(raw_password, self.temporary_password)
+
+    def send_temporary_password_email(self, temporary_password):
+        message = render_to_string('user/temporary_password_email.html', {
+            'user': self,
+            'site_url': settings.SITE_URL,
+            'temporary_password': temporary_password
+        })
+        email = EmailMessage("Temporary password", message, to=[self.email])
+        email.send()
 
 
 class Profile(models.Model):
@@ -34,7 +54,6 @@ class Profile(models.Model):
     country = models.TextField(max_length=50, blank=True)
     categories = models.ManyToManyField('projects.ProjectCategory', related_name='competance_categories')
     session = models.ForeignKey(Session, on_delete=models.SET_NULL, blank=True, default=None, null=True)
-    security_questions = models.ManyToManyField(SecurityQuestion, through='SecurityQuestionInter')
 
     def __str__(self):
         return self.user.username
@@ -44,7 +63,7 @@ class SecurityQuestionInter(models.Model):
     class Meta:
         db_table = 'security_questions_inter'
 
-    profile = models.ForeignKey(Profile, on_delete=models.CASCADE)
+    user = models.ForeignKey(AppUser, on_delete=models.CASCADE)
     security_question = models.ForeignKey(SecurityQuestion, on_delete=models.CASCADE)
     answer = models.CharField(max_length=250, null=False)
 
