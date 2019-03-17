@@ -1,6 +1,4 @@
-from django.contrib.auth import authenticate, login
-from django.contrib.auth.hashers import make_password
-from django.contrib.auth.models import User
+from django.contrib.auth import authenticate, login, logout
 from django.contrib.sessions.backends.cache import SessionStore
 from django.http import HttpResponseRedirect
 from django.urls import reverse_lazy
@@ -13,13 +11,9 @@ class IndexView(TemplateView):
     template_name = "sec/base.html"
 
 
-# FIXME: No Session Expiration - Invalidate session on logout
-"""
-Sessions have virtually no expiration (~70 years).
-Neither is the session invalidated on logout.
-"""
-def logout(request):
+def custom_logout(request):
     request.session = SessionStore()
+    logout(request)
     return HttpResponseRedirect(reverse_lazy("home"))
 
 

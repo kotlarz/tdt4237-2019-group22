@@ -1,6 +1,4 @@
-from django.contrib.auth import user_logged_in
 from django.contrib.auth.models import User
-from django.contrib.sessions.backends.db import SessionStore
 from django.contrib.sessions.models import Session
 from django.db import models
 from django.db.models.signals import post_save
@@ -28,13 +26,3 @@ def update_user_profile(sender, instance, created, **kwargs):
     if created:
         Profile.objects.create(user=instance)
     instance.profile.save()
-
-
-@receiver(user_logged_in)
-def update_session(sender, request, **kwargs):
-    if request.user.profile.session is not None:
-        request.session = SessionStore(session_key=request.user.profile.session.session_key)
-        request.session.modified = True
-    else:
-        request.user.profile.session_id = request.session.session_key
-        request.user.profile.save()
