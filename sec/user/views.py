@@ -21,16 +21,17 @@ def custom_logout(request):
     return HttpResponseRedirect(reverse_lazy("home"))
 
 
-def activate(request, uidb64, token):
+def activate(request, uidb64, token, backend='django.contrib.auth.backends.ModelBackend'):
     try:
         uid = force_text(urlsafe_base64_decode(uidb64))
         user = AppUser.objects.get(pk=uid)
     except(TypeError, ValueError, OverflowError, AppUser.DoesNotExist):
         user = None
+
     if user is not None and account_activation_token.check_token(user, token):
         user.is_active = True
         user.save()
-        login(request, user)
+        login(request, user, backend=backend)
         return HttpResponseRedirect(reverse_lazy("home"))
     else:
         user.send_activation_mail()
