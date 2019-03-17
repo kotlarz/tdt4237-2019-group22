@@ -68,17 +68,6 @@ def new_project(request):
         form = ProjectForm()
     return render(request, 'projects/new_project.html', {'form': form})
 
-
-# FIXME: Missing Function Level Access Control
-"""
-The delete functionality for a file does not check for permissions,
-which means that any user may delete any of the files uploaded to the page.
-Update: It is not only delete files that does not check for permissions.
-Other examples of this is; Modify task offers, create payment and read them,
-respond to deliveries, add members to a team and change team permission.
-“The application verifies that the user has authorization for the task,
-but fails to check that the delivery belongs to that task.“
-"""
 def project_view(request, project_id):
     project = get_object_or_404(Project, pk=project_id)
     tasks = project.tasks.all()
@@ -280,21 +269,22 @@ def task_view(request, project_id, task_id):
                 task.save()
 
     if request.method == 'POST' and 'delivery-response' in request.POST:
-        instance = get_object_or_404(Delivery, id=request.POST.get('delivery-id'))
-        deliver_response_form = TaskDeliveryResponseForm(request.POST, instance=instance)
-        if deliver_response_form.is_valid():
-            delivery = deliver_response_form.save()
-            from django.utils import timezone
-            delivery.responding_time = timezone.now()
-            delivery.responding_user = user.profile
-            delivery.save()
+        if user_permissions['owner']:
+            instance = get_object_or_404(Delivery, id=request.POST.get('delivery-id'))
+            deliver_response_form = TaskDeliveryResponseForm(request.POST, instance=instance)
+            if deliver_response_form.is_valid():
+                delivery = deliver_response_form.save()
+                from django.utils import timezone
+                delivery.responding_time = timezone.now()
+                delivery.responding_user = user.profile
+                delivery.save()
 
-            if delivery.status == 'a':
-                task.status = "pp"
-                task.save()
-            elif delivery.status == 'd':
-                task.status = "dd"
-                task.save()
+                if delivery.status == 'a':
+                    task.status = "pp"
+                    task.save()
+                elif delivery.status == 'd':
+                    task.status = "dd"
+                    task.save()
 
     if request.method == 'POST' and 'team' in request.POST:
         if accepted_task_offer and accepted_task_offer.offerer == user.profile:
@@ -368,9 +358,9 @@ def task_view(request, project_id, task_id):
 
 @login_required
 def task_permissions(request, project_id, task_id):
-    project = Project.objects.get(pk=project_id)
+    project = get_object_or_404(Project, pk=project_id)
     if project.user == request.user.profile:
-        task = Task.objects.get(pk=task_id)
+        task = get_object_or_404(Task, pk=task_id)
         if int(project_id) == task.project.id:
             if request.method == 'POST':
                 task_permission_form = TaskPermissionForm(request.POST)
@@ -401,17 +391,6 @@ def task_permissions(request, project_id, task_id):
             )
     return redirect('task_view', project_id=project_id, task_id=task_id)
 
-
-# FIXME: Missing Function Level Access Control
-"""
-The delete functionality for a file does not check for permissions,
-which means that any user may delete any of the files uploaded to the page.
-Update: It is not only delete files that does not check for permissions.
-Other examples of this is; Modify task offers, create payment and read them,
-respond to deliveries, add members to a team and change team permission.
-“The application verifies that the user has authorization for the task,
-but fails to check that the delivery belongs to that task.“
-"""
 @login_required
 def delete_file(request, file_id):
     # Check if user has modify access to file or modify privilege
