@@ -1,9 +1,10 @@
+from axes.decorators import axes_dispatch
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.sessions.backends.cache import SessionStore
 from django.http import HttpResponseRedirect
 from django.urls import reverse_lazy
+from django.utils.decorators import method_decorator
 from django.views.generic import TemplateView, CreateView, FormView
-
 from .forms import SignUpForm, LoginForm
 
 
@@ -12,39 +13,20 @@ class IndexView(TemplateView):
 
 
 def custom_logout(request):
-    request.session = SessionStore()
     logout(request)
+    request.session = SessionStore()
     return HttpResponseRedirect(reverse_lazy("home"))
 
 
-# FIXME: No Session Renewal - Rewnew on login
-"""
-Sessions are not renewed on login. In addition, the same session id is shared
-between all sessions for a single user. This means that, together with no session
-expiration, if an attacker gains access to the session of a user, the attacker
-will have permanent access to the user
-"""
+@method_decorator(axes_dispatch, name='dispatch')
 class LoginView(FormView):
     form_class = LoginForm
     template_name = "user/login.html"
     success_url = reverse_lazy("home")
 
-    # FIXME: No Login Throttling/No Lockout Mechanism
-    # TODO: Lookup django-axes or django-ratelimit.
-    """
-    Neither login throttling, nor a lockout mechanism is implemented.
-    Making it very simple for an attacker to perform brute force attacks
-    on the login page.
-    """
-    # FIXME: Insufficient logging and monitoring (Top 10-2017 A10):
-    """
-    Exploitation of insufficient logging and monitoring is the bedrock of nearly
-    every major incident. Attackers rely on the lack of monitoring and timely
-    response to achieve their goals without being detected.
-    All group should add logging of failed login attempts.
-    """
     def form_valid(self, form):
         user = authenticate(
+            request=self.request,
             username=form.cleaned_data["username"],
             password=form.cleaned_data["password"]
         )
