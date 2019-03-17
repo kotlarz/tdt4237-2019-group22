@@ -1,7 +1,5 @@
-from django.contrib.auth import user_logged_in
 from django.contrib.auth.hashers import make_password, check_password
 from django.contrib.auth.models import AbstractUser
-from django.contrib.sessions.backends.db import SessionStore
 from django.contrib.sessions.models import Session
 from django.core.mail import EmailMessage
 from django.db import models

@@ -1,7 +1,6 @@
 from django import forms
 from django.contrib.auth.forms import UserCreationForm
 from django.core.exceptions import ValidationError
-from django.forms.utils import ErrorList
 
 from projects.models import ProjectCategory
 from user.models import SecurityQuestion, AppUser, SecurityQuestionInter
