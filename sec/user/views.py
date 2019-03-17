@@ -49,18 +49,15 @@ class LoginView(FormView):
             return super().form_invalid(form)
 
 
+# TODO: should be moved under AppUser.
 def send_activation_mail(user):
-    message = render_to_string('user/acc_active_email.html', {
+    message = render_to_string('user/activation_email.html', {
         'user': user,
-        'domain': settings.SITE_URL,
+        'site_url': settings.SITE_URL,
         'uid': urlsafe_base64_encode(force_bytes(user.pk)).decode(),
         'token': account_activation_token.make_token(user),
     })
-
-    to_email = user.email
-    email = EmailMessage(
-        "Confirm email", message, to=[to_email]
-    )
+    email = EmailMessage("Activation email", message, to=[user.email])
     email.send()
 
 
@@ -101,7 +98,7 @@ class SignupView(CreateView):
 
         send_activation_mail(user)
 
-        return HttpResponse('Please check your email to confirm your email address. You can now close this window')
+        return render(self.request, 'user/signup_done.html')
 
 
 def activate(request, uidb64, token):
@@ -117,7 +114,7 @@ def activate(request, uidb64, token):
         return HttpResponseRedirect(reverse_lazy("home"))
     else:
         send_activation_mail(user)
-        return HttpResponse('<h1>Activation link has expired!</h1> A new activation mail has been sent to your email.')
+        return render(request, 'user/activation_expired.html')
 
 
 class ForgotPasswordWizardView(SessionWizardView):
