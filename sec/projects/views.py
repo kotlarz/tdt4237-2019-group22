@@ -429,12 +429,8 @@ class TaskFileDownloadView(PrivateStorageDetailView):
     model_file_field = 'file'
 
     def get_object(self, **kwargs):
-        # Check if user is authenticated
-        user = self.request.user
-        if  not user.is_authenticated:
-            raise Http404()
-
         # Check if user has read access to file or read privilege
+        user = self.request.user
         task_id = self.kwargs['task_id']
         task = Task.objects.get(pk=task_id)
         team_ids = user.profile.teams.filter(task__id=task.id).values_list('pk', flat=True)
@@ -458,12 +454,8 @@ class DeliveryFileDownloadView(PrivateStorageDetailView):
     model_file_field = 'file'
 
     def get_object(self, **kwargs):
-        # Check if user is authenticated
-        user = self.request.user
-        if  not user.is_authenticated:
-            raise Http404()
-
         # Check if user is project owner
+        user = self.request.user
         task_id = self.kwargs['task_id']
         task = Task.objects.get(pk=task_id)
         if user != task.project.user.user and user != task.accepted_task_offer().offerer.user:
