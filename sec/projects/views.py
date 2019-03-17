@@ -432,7 +432,7 @@ class TaskFileDownloadView(PrivateStorageDetailView):
         # Check if user has read access to file or read privilege
         user = self.request.user
         task_id = self.kwargs['task_id']
-        task = Task.objects.get(pk=task_id)
+        task = Task.objects.get_object_or_404(pk=task_id)
         team_ids = user.profile.teams.filter(task__id=task.id).values_list('pk', flat=True)
         has_read_file_access = TaskFileTeam.objects.get_queryset().filter(team_id__in=team_ids, read=True).exists()
         user_permissions = get_user_task_permissions(user, task)
@@ -441,8 +441,8 @@ class TaskFileDownloadView(PrivateStorageDetailView):
 
         # Fetch and return file
         file = self.request.path.replace("/projects/", "")
-        object = get_object_or_404(TaskFile, file=file)
-        return object
+        obj = get_object_or_404(TaskFile, file=file)
+        return obj
 
     def can_access_file(self, private_file):
         # When the object can be accessed, the file may be downloaded.
@@ -457,7 +457,7 @@ class DeliveryFileDownloadView(PrivateStorageDetailView):
         # Check if user is project owner
         user = self.request.user
         task_id = self.kwargs['task_id']
-        task = Task.objects.get(pk=task_id)
+        task = Task.objects.get_object_or_404(pk=task_id)
         if user != task.project.user.user and user != task.accepted_task_offer().offerer.user:
             raise Http404()
 
