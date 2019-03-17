@@ -30,9 +30,6 @@ ALLOWED_HOSTS = ['127.0.0.1', 'localhost', 'tdt4237.idi.ntnu.no']
 
 DEBUG = False
 
-#TODO Uncomment to reactivate when not using local server
-#SESSION_COOKIE_DOMAIN='http://tdt4237.idi.ntnu.no:4022/';
-
 # Application definition
 
 INSTALLED_APPS = [
@@ -64,6 +61,9 @@ MIDDLEWARE = [
 X_FRAME_OPTIONS = 'DENY'
 # The session expires in one week, half of the default value
 SESSION_COOKIE_AGE = 1209600 / 2
+# Ports for cookie domains is not possible, see: https://code.djangoproject.com/ticket/2806
+SESSION_COOKIE_DOMAIN = 'tdt4237.idi.ntnu.no'
+SESSION_COOKIE_HTTPONLY = True
 
 ROOT_URLCONF = 'sec.urls'
 
