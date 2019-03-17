@@ -414,21 +414,15 @@ but fails to check that the delivery belongs to that task.“
 """
 @login_required
 def delete_file(request, file_id):
-    # Check if user is authenticated
-    user = request.user
-    if not user.is_authenticated:
-        raise Http404()
-
     # Check if user has modify access to file or modify privilege
+    user = request.user
     f = TaskFile.objects.get(pk=file_id)
     task = Task.objects.get(pk=f.task_id)
     team_ids = user.profile.teams.values_list('pk', flat=True)
     has_delete_file_access = TaskFileTeam.objects.get_queryset().filter(team_id__in=team_ids, file_id=file_id, modify=True).exists()
-    modify_permission = user.profile.task_participants_modify.filter(id=task.id).exists()
+    user_permissions = get_user_task_permissions(user, task)
 
-    # Check if user is customer or project manager
-    accepted_task_offer = task.accepted_task_offer()
-    if task.project.user != request.user.profile and user != accepted_task_offer.offerer.user and not modify_permission and not has_delete_file_access:
+    if not user_permissions['modify'] and not has_delete_file_access:
         raise Http404()
 
     f.delete()
@@ -473,34 +467,8 @@ class DeliveryFileDownloadView(PrivateStorageDetailView):
 
         # Fetch and return file
         file = self.request.path.replace("/projects/", "")
-        object = get_object_or_404(Delivery, file=file)
-        return object
-
-    def can_access_file(self, private_file):
-        # When the object can be accessed, the file may be downloaded.
-        # This overrides PRIVATE_STORAGE_AUTH_FUNCTION
-        return True
-
-class DeliveryFileDownloadView(PrivateStorageDetailView):
-    model = Delivery
-    model_file_field = 'file'
-
-    def get_object(self, **kwargs):
-        # Check if user is authenticated
-        user = self.request.user
-        if  not user.is_authenticated:
-            raise Http404()
-
-        # Check if user is project owner
-        task_id = self.kwargs['task_id']
-        task = Task.objects.get(pk=task_id)
-        if user != task.project.user.user:
-            raise Http404()
-
-        # Fetch and return file
-        file = self.request.path.replace("/projects/", "")
-        object = get_object_or_404(Delivery, file=file)
-        return object
+        obj = get_object_or_404(Delivery, file=file)
+        return obj
 
     def can_access_file(self, private_file):
         # When the object can be accessed, the file may be downloaded.
