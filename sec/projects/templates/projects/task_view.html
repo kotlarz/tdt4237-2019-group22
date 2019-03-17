@@ -263,8 +263,10 @@
                         {{ user_profile.user.username }}
                     </div>
                 {% endfor %}
-                <a class="btn btn-default" role="button"
-                   href="{% url 'task_permissions' project_id=project.id task_id=task.id %}">Give permission</a>
+                {% if user_permissions.owner %}
+                    <a class="btn btn-default" role="button"
+                       href="{% url 'task_permissions' project_id=project.id task_id=task.id %}">Give permission</a>
+                {% endif %}
             </div>
         </div>
     {% endif %}

@@ -368,11 +368,9 @@ def task_view(request, project_id, task_id):
 
 @login_required
 def task_permissions(request, project_id, task_id):
-    user = request.user
-    task = get_object_or_404(Task, pk=task_id)
-    project = get_object_or_404(Project, pk=project_id)
-    accepted_task_offer = task.accepted_task_offer()
-    if project.user == request.user.profile or user == accepted_task_offer.offerer.user:
+    project = Project.objects.get(pk=project_id)
+    if project.user == request.user.profile:
+        task = Task.objects.get(pk=task_id)
         if int(project_id) == task.project.id:
             if request.method == 'POST':
                 task_permission_form = TaskPermissionForm(request.POST)
