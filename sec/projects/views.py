@@ -80,7 +80,7 @@ respond to deliveries, add members to a team and change team permission.
 but fails to check that the delivery belongs to that task.“
 """
 def project_view(request, project_id):
-    project = Project.objects.get(pk=project_id)
+    project = get_object_or_404(Project, pk=project_id)
     tasks = project.tasks.all()
     total_budget = sum(task.budget for task in tasks)
 
@@ -144,8 +144,8 @@ escalation on the server.
 """
 @login_required
 def upload_file_to_task(request, project_id, task_id):
-    project = Project.objects.get(pk=project_id)
-    task = Task.objects.get(pk=task_id)
+    project = get_object_or_404(Project, pk=project_id)
+    task = get_object_or_404(Task, pk=task_id)
     user_permissions = get_user_task_permissions(request.user, task)
     accepted_task_offer = task.accepted_task_offer()
 
@@ -259,8 +259,8 @@ something you will have to fix.
 @login_required
 def task_view(request, project_id, task_id):
     user = request.user
-    task = Task.objects.get(pk=task_id)
-    project = Project.objects.get(pk=project_id)
+    task = get_object_or_404(Task, pk=task_id)
+    project = get_object_or_404(Project, pk=project_id)
     accepted_task_offer = task.accepted_task_offer()
 
     user_permissions = get_user_task_permissions(request.user, task)
@@ -369,11 +369,10 @@ def task_view(request, project_id, task_id):
 @login_required
 def task_permissions(request, project_id, task_id):
     user = request.user
-    task = Task.objects.get(pk=task_id)
-    project = Project.objects.get(pk=project_id)
+    task = get_object_or_404(Task, pk=task_id)
+    project = get_object_or_404(Project, pk=project_id)
     accepted_task_offer = task.accepted_task_offer()
     if project.user == request.user.profile or user == accepted_task_offer.offerer.user:
-        task = Task.objects.get(pk=task_id)
         if int(project_id) == task.project.id:
             if request.method == 'POST':
                 task_permission_form = TaskPermissionForm(request.POST)
@@ -419,7 +418,7 @@ but fails to check that the delivery belongs to that task.“
 def delete_file(request, file_id):
     # Check if user has modify access to file or modify privilege
     user = request.user
-    f = TaskFile.objects.get(pk=file_id)
+    f = get_object_or_404(TaskFile, pk=file_id)
     task = Task.objects.get(pk=f.task_id)
     team_ids = user.profile.teams.values_list('pk', flat=True)
     has_delete_file_access = TaskFileTeam.objects.get_queryset().filter(team_id__in=team_ids, file_id=file_id, modify=True).exists()
@@ -430,6 +429,7 @@ def delete_file(request, file_id):
 
     f.delete()
     return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
+
 
 class TaskFileDownloadView(PrivateStorageDetailView):
     model = TaskFile
