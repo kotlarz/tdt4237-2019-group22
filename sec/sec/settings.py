@@ -166,6 +166,8 @@ PASSWORD_HASHERS = [
     'django.contrib.auth.hashers.MD5PasswordHasher'
 ]
 
+AUTH_USER_MODEL = 'user.AppUser'
+
 # Login redirect
 LOGIN_URL = 'login'
 LOGIN_REDIRECT_URL = 'home'

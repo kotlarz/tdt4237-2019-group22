@@ -1,8 +1,7 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
-from django.contrib.auth.models import User
 
-from .models import Profile
+from .models import Profile, AppUser
 
 
 class ProfileInline(admin.StackedInline):
@@ -31,5 +30,4 @@ class CustomUserAdmin(UserAdmin):
         return super(CustomUserAdmin, self).get_inline_instances(request, obj)
 
 
-admin.site.unregister(User)
-admin.site.register(User, CustomUserAdmin)
+admin.site.register(AppUser, CustomUserAdmin)

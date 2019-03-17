@@ -2,13 +2,12 @@ import os
 import stat
 
 from django.contrib.auth.decorators import login_required
-from django.contrib.auth.models import User
 from django.http import HttpResponseRedirect
 from django.shortcuts import render, redirect, get_object_or_404
 from django.views.decorators.csrf import csrf_exempt
 from django.views.generic import TemplateView
 
-from user.models import Profile
+from user.models import Profile, AppUser
 from .forms import ProjectForm, TaskFileForm, ProjectStatusForm, TaskOfferForm, TaskOfferResponseForm, \
     TaskPermissionForm, DeliveryForm, TaskDeliveryResponseForm, TeamForm, TeamAddForm
 from .models import Project, Task, TaskFile, TaskOffer, Delivery, ProjectCategory, Team, TaskFileTeam, directory_path
@@ -384,7 +383,7 @@ def task_permissions(request, project_id, task_id):
                 if task_permission_form.is_valid():
                     try:
                         username = task_permission_form.cleaned_data['user']
-                        user = User.objects.get(username=username)
+                        user = AppUser.objects.get(username=username)
                         permission_type = task_permission_form.cleaned_data['permission']
                         if permission_type == 'Read':
                             task.read.add(user.profile)
