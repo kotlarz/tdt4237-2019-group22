@@ -11,5 +11,5 @@ def validate_file_extension(file):
 
 def validate_file_size(file):
     if file.size > settings.MAX_FILE_SIZE:
-        raise ValidationError('File {1} is too big. File size is {1} MB, and maximum file size is {2} MB.'
+        raise ValidationError('File {0} is too big. File size is {1} MB, and maximum file size is {2} MB.'
                               .format(file, file.size/1000000, settings.MAX_FILE_SIZE/1000000))
