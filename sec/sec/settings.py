@@ -21,10 +21,10 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/2.0/howto/deployment/checklist/
 
-# SECURITY WARNING: keep the secret key used in production secret!
-# FIXME: Replace in production
-SECRET_KEY = '$n%^#g%qx#82w6t^dvjqwv)q*1cy+fwh1ohku7-rbjqcei2^jr'
-
+SECRET_KEY = os.getenv('BEELANCE_SECRET_KEY', 'key')
+if SECRET_KEY == 'key':
+    print("Secret key has not been changed! Set BEELANCE_SECRET_KEY to run application.")
+    exit(0)
 
 ALLOWED_HOSTS = ['127.0.0.1', 'localhost', 'tdt4237.idi.ntnu.no']
 
@@ -205,8 +205,30 @@ MAX_FILE_SIZE = 5000000
 # Adds X-Content-Type-Options: nosniff
 SECURE_CONTENT_TYPE_NOSNIFF = True
 
-
+# Email settings
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+
+EMAIL_USE_TLS = True
+EMAIL_HOST = os.getenv('BEELANCE_EMAIL_HOST', 'myhost.com')
+EMAIL_HOST_USER = os.getenv('BEELANCE_EMAIL_HOST_USER', 'myhost@user.com')
+EMAIL_HOST_PASSWORD = os.getenv('BEELANCE_EMAIL_HOST_PASSWORD', 'mypassword')
+EMAIL_PORT = os.getenv('BEELANCE_EMAIL_PORT', -1)
+
+if EMAIL_HOST == 'myhost.com':
+    print("Email host has not been changed! Set BEELANCE_EMAIL_HOST to run application.")
+    exit(0)
+
+if EMAIL_HOST_USER == 'myhost@user.com':
+    print("Email host user has not been changed! Set BEELANCE_EMAIL_HOST_USER to run application.")
+    exit(0)
+
+if EMAIL_HOST_PASSWORD == 'mypassword':
+    print("Email host password has not been changed! Set BEELANCE_EMAIL_HOST_PASSWORD to run application.")
+    exit(0)
+
+if EMAIL_PORT == -1:
+    print("Email port has not been changed! Set BEELANCE_EMAIL_PORT to run application.")
+    exit(0)
 
 
 # Password reset token generator timeout
@@ -216,7 +238,10 @@ PASSWORD_RESET_TIMEOUT_DAYS = 1
 SITE_URL = "http://tdt4237.idi.ntnu.no:4022"
 
 # Default password for superuser
-DEFAULT_ADMIN_PASSWORD = 'besteProgSikGruppAnoenSinNe4'
+DEFAULT_ADMIN_PASSWORD = os.getenv('BEELANCE_DEFAULT_ADMIN_PASSWORD', 'pass')
+if DEFAULT_ADMIN_PASSWORD == 'pass':
+    print("Default admin password has not been changed! Set BEELANCE_DEFAULT_ADMIN_PASSWORD to run application.")
+    exit(0)
 
 try:
     from .local_settings import *

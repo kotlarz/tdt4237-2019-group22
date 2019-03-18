@@ -14,6 +14,13 @@ services:
       - ./static:/home/www-data/group22/static
 
   sec:
+    environment:
+      - BEELANCE_SECRET_KEY
+      - BEELANCE_EMAIL_HOST
+      - BEELANCE_EMAIL_HOST_USER
+      - BEELANCE_EMAIL_HOST_PASSWORD
+      - BEELANCE_EMAIL_PORT
+      - BEELANCE_DEFAULT_ADMIN_PASSWORD
     build: .
     image: sec
     ports:
