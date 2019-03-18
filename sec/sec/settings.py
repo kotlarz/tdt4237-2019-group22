@@ -47,6 +47,7 @@ INSTALLED_APPS = [
     'django_icons',
     'payment.apps.PaymentConfig',
     'axes',
+    'private_storage',
 ]
 
 CACHES = {
@@ -195,9 +196,12 @@ STATIC_ROOT = os.path.join(BASE_DIR, "static")
 Users may open uploaded project files that they do not have permissions for, by
 entering the URL directly.
 """
-MEDIA_ROOT = os.path.join(BASE_DIR, "media")
-MEDIA_URL = "/media/"
+# Media files
+MEDIA_ROOT = os.path.join(BASE_DIR, "projects")
+MEDIA_URL = "/projects/"
 
+PRIVATE_STORAGE_ROOT = MEDIA_ROOT
+PRIVATE_STORAGE_AUTH_FUNCTION = 'private_storage.permissions.allow_staff'
 
 # Adds X-Content-Type-Options: nosniff
 SECURE_CONTENT_TYPE_NOSNIFF = True

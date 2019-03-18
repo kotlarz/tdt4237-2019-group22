@@ -2,10 +2,10 @@ import os
 import stat
 
 from django.contrib.auth.decorators import login_required
-from django.http import HttpResponseRedirect
+from django.http import HttpResponseRedirect, Http404
 from django.shortcuts import render, redirect, get_object_or_404
-from django.views.decorators.csrf import csrf_exempt
 from django.views.generic import TemplateView
+from private_storage.views import PrivateStorageDetailView
 
 from user.models import Profile, AppUser
 from .forms import ProjectForm, TaskFileForm, ProjectStatusForm, TaskOfferForm, TaskOfferResponseForm, \
@@ -423,3 +423,50 @@ def delete_file(request, file_id):
     f = TaskFile.objects.get(pk=file_id)
     f.delete()
     return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
+
+class TaskFileDownloadView(PrivateStorageDetailView):
+    model = TaskFile
+    model_file_field = 'file'
+
+    def get_object(self, **kwargs):
+        # Check if user has read access to file or read privilege
+        user = self.request.user
+        task_id = self.kwargs['task_id']
+        task = Task.objects.get_object_or_404(pk=task_id)
+        team_ids = user.profile.teams.filter(task__id=task.id).values_list('pk', flat=True)
+        has_read_file_access = TaskFileTeam.objects.get_queryset().filter(team_id__in=team_ids, read=True).exists()
+        user_permissions = get_user_task_permissions(user, task)
+        if not user_permissions['read'] and not has_read_file_access:
+            raise Http404()
+
+        # Fetch and return file
+        file = self.request.path.replace("/projects/", "")
+        obj = get_object_or_404(TaskFile, file=file)
+        return obj
+
+    def can_access_file(self, private_file):
+        # When the object can be accessed, the file may be downloaded.
+        # This overrides PRIVATE_STORAGE_AUTH_FUNCTION
+        return True
+
+class DeliveryFileDownloadView(PrivateStorageDetailView):
+    model = Delivery
+    model_file_field = 'file'
+
+    def get_object(self, **kwargs):
+        # Check if user is project owner
+        user = self.request.user
+        task_id = self.kwargs['task_id']
+        task = Task.objects.get_object_or_404(pk=task_id)
+        if user != task.project.user.user and user != task.accepted_task_offer().offerer.user:
+            raise Http404()
+
+        # Fetch and return file
+        file = self.request.path.replace("/projects/", "")
+        object = get_object_or_404(Delivery, file=file)
+        return object
+
+    def can_access_file(self, private_file):
+        # When the object can be accessed, the file may be downloaded.
+        # This overrides PRIVATE_STORAGE_AUTH_FUNCTION
+        return True
