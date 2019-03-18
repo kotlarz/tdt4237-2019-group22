@@ -1,6 +1,7 @@
 from django import forms
 from django.contrib.auth.forms import UserCreationForm
 from django.core.exceptions import ValidationError
+from django.forms import PasswordInput
 
 from projects.models import ProjectCategory
 from user.models import SecurityQuestion, AppUser, SecurityQuestionInter
@@ -91,9 +92,9 @@ class ForgotPasswordForm(forms.Form):
 
 
 class ResetPasswordForm(forms.Form):
-    temporary_password = forms.CharField(widget=forms.TextInput(attrs={"placeholder": "", "type": "password"}))
-    new_password_1 = forms.CharField(label="New Password", widget=forms.TextInput(attrs={"placeholder": "", "type": "password"}))
-    new_password_2 = forms.CharField(label="New Password (again)", widget=forms.TextInput(attrs={"placeholder": "", "type": "password"}))
+    temporary_password = forms.CharField(widget=PasswordInput)
+    new_password_1 = forms.CharField(label="New Password", widget=PasswordInput)
+    new_password_2 = forms.CharField(label="New Password (again)", widget=PasswordInput)
 
     def clean_new_password_2(self):
         new_password_1 = self.cleaned_data["new_password_1"]
