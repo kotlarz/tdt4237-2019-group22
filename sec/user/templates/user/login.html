@@ -5,7 +5,7 @@
 
 {% block content %}
     <h2>Login</h2>
-    <form method="post">
+    <form method="post" autocomplete="off">
         {% csrf_token %}
         {% bootstrap_form form %}
         <button type="submit">Login</button>
