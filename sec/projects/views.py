@@ -124,13 +124,6 @@ def project_view(request, project_id):
         })
 
 
-# FIXME: Malicious file uploads - Limit file types that can be uploaded?
-"""
-When accessing either a bash file or a python file that has been uploaded,
-the file will be executed. This allows for arbitrary code execution
-on the server. Which may allow root access to the server to privilege
-escalation on the server.
-"""
 @login_required
 def upload_file_to_task(request, project_id, task_id):
     project = get_object_or_404(Project, pk=project_id)
@@ -233,18 +226,6 @@ def get_user_task_permissions(user, task):
     return user_permissions
 
 
-# FIXME: Sensitive Data Exposure - Only list related users
-"""
-The header of each page leaks the password of the currently
-logged in user in a comment. Also, the form for giving
-permissions, leaks a list of all the users. This
-together with the SQL Injection, allows the attacker to login
-to all users.
-Note: The server is also running over HTTP instead of HTTPS
-which exposes information in-flight between the server and
-client. Since we are responsible for the hosting, this is not
-something you will have to fix.
-"""
 @login_required
 def task_view(request, project_id, task_id):
     user = request.user
