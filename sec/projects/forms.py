@@ -60,11 +60,15 @@ PERMISSION_CHOICES = (
     ('Modify', 'Modify'),
 )
 
-
 class TaskPermissionForm(forms.Form):
-    user = forms.ModelChoiceField(queryset=User.objects.all())
+    user = forms.ModelChoiceField(queryset=None)
     permission = forms.ChoiceField(choices=PERMISSION_CHOICES)
 
+
+    def __init__(self, *args, project=None, **kwargs):
+        super().__init__(*args, **kwargs)
+        if project:
+            self.fields['user'].queryset = Project.objects.get(pk=project.pk).participants
 
 class DeliveryForm(forms.ModelForm):
     comment = forms.Textarea()

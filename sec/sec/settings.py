@@ -36,15 +36,7 @@ making it easier for an attacker to steal the cookie.
 """
 DEBUG = True
 
-# FIXME: Allowed hosts
-"""
-Lists of allowed_hosts is intended to be a white-list and
-including 0.0.0.0 means that any host is accepted.
-Accepting any host is not recommend as this gives attackers the
-opportunity to make Django generate and display URL’s to users
-on arbitrary domains.
-"""
-ALLOWED_HOSTS = ['127.0.0.1', 'localhost', '0.0.0.0']
+ALLOWED_HOSTS = ['127.0.0.1', 'localhost', 'tdt4237.idi.ntnu.no']
 
 # Application definition
 
@@ -64,13 +56,6 @@ INSTALLED_APPS = [
     'payment.apps.PaymentConfig',
 ]
 
-# FIXME: Clickjacking - Add X-Frame-Options AND other missing headers (see report)
-# TODO: https://docs.djangoproject.com/en/2.1/ref/clickjacking/
-"""
-The page is vulnerable to clickjacking. So, malicious sites can embed the page
-in an iframe and lure users into performing actions they would not normally due.
-Such as give permissions on their tasks to the attacker.
-"""
 # FIXME: Security Misconfiguration - Remove, server2 header, etc. in production (InformationMiddleware)
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -79,8 +64,11 @@ MIDDLEWARE = [
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
+    'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'sec.middleware.InformationMiddleware',
 ]
+
+X_FRAME_OPTIONS = 'DENY'
 
 ROOT_URLCONF = 'sec.urls'
 
@@ -129,16 +117,12 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
-# FIXME: Insecure Password Hashing - Static salt (OTG-CRYPST-004?)
-# TODO: https://docs.djangoproject.com/en/2.1/topics/auth/passwords/
-# TODO: Use PBKDF2 instead.
-"""
-The password hashing algorithm used on the server is severely insecure. It
-is both using MD5 and a static salt.
-"""
 PASSWORD_HASHERS = [
-    "user.passwords.CustomMD5PasswordHasher"
+    'django.contrib.auth.hashers.PBKDF2PasswordHasher',
+    'django.contrib.auth.hashers.MD5PasswordHasher'
 ]
+
+AUTH_USER_MODEL = 'user.AppUser'
 
 # Login redirect
 LOGIN_URL = 'login'
@@ -171,14 +155,8 @@ MEDIA_ROOT = os.path.join(BASE_DIR, "media")
 MEDIA_URL = "/media/"
 
 
-# FIXME: MIME-Type sniffing vulnerability:
-# TODO: https://docs.djangoproject.com/en/dev/ref/settings/#secure-content-type-nosniff
-"""
-It is possible for an attacker to leverage MIME sniffing to determine a different file type
-and cause the execution of malicious script. For example, malicious file can be “translated”
-by the browser as an image jpg. Thus, browser will execute it as an HTML and therefore
-causing the execution of malicious script.
-"""
+# Adds X-Content-Type-Options: nosniff
+SECURE_CONTENT_TYPE_NOSNIFF = True
 
 
 EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'

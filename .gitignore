@@ -1,4 +1,5 @@
 #app
+/static/
 
 # Mac
 .DS_Store
