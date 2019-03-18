@@ -93,10 +93,8 @@ class ForgotPasswordForm(forms.Form):
 
 class ResetPasswordForm(forms.Form):
     temporary_password = forms.CharField(widget=PasswordInput)
-    new_password_1 = forms.CharField(
-        label="New Password", widget=PasswordInput)
-    new_password_2 = forms.CharField(
-        label="New Password (again)", widget=PasswordInput)
+    new_password_1 = forms.CharField(label="New Password", widget=PasswordInput)
+    new_password_2 = forms.CharField(label="New Password (again)", widget=PasswordInput)
 
     def clean_new_password_2(self):
         new_password_1 = self.cleaned_data["new_password_1"]
