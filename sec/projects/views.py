@@ -142,12 +142,6 @@ the file will be executed. This allows for arbitrary code execution
 on the server. Which may allow root access to the server to privilege
 escalation on the server.
 """
-# FIXME: Broken Access Control - Private media storage
-# TODO: Lookup django-private-storage or django-filer
-"""
-Users may open uploaded project files that they do not have permissions for, by
-entering the URL directly.
-"""
 @login_required
 def upload_file_to_task(request, project_id, task_id):
     project = Project.objects.get(pk=project_id)
@@ -420,7 +414,17 @@ but fails to check that the delivery belongs to that task.“
 """
 @login_required
 def delete_file(request, file_id):
+    # Check if user has modify access to file or modify privilege
+    user = request.user
     f = TaskFile.objects.get(pk=file_id)
+    task = Task.objects.get(pk=f.task_id)
+    team_ids = user.profile.teams.values_list('pk', flat=True)
+    has_delete_file_access = TaskFileTeam.objects.get_queryset().filter(team_id__in=team_ids, file_id=file_id, modify=True).exists()
+    user_permissions = get_user_task_permissions(user, task)
+
+    if not user_permissions['modify'] and not has_delete_file_access:
+        raise Http404()
+
     f.delete()
     return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
 
@@ -463,8 +467,8 @@ class DeliveryFileDownloadView(PrivateStorageDetailView):
 
         # Fetch and return file
         file = self.request.path.replace("/projects/", "")
-        object = get_object_or_404(Delivery, file=file)
-        return object
+        obj = get_object_or_404(Delivery, file=file)
+        return obj
 
     def can_access_file(self, private_file):
         # When the object can be accessed, the file may be downloaded.
