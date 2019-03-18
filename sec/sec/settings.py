@@ -215,6 +215,9 @@ PASSWORD_RESET_TIMEOUT_DAYS = 1
 # Site URL
 SITE_URL = "http://tdt4237.idi.ntnu.no:4022"
 
+# Default password for superuser
+DEFAULT_ADMIN_PASSWORD = 'besteProgSikGruppAnoenSinNe4'
+
 try:
     from .local_settings import *
 except ModuleNotFoundError:
