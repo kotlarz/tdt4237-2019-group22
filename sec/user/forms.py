@@ -1,15 +1,17 @@
 from django import forms
 from django.contrib.auth.forms import UserCreationForm
 from django.core.exceptions import ValidationError
+
 from projects.models import ProjectCategory
-from user.models import SecurityQuestion, AppUser
+from user.models import SecurityQuestion, AppUser, SecurityQuestionInter
+
+SECURITY_UNIQUE_VALIDATION_ERROR_MESSAGE = "Security questions need to be unique"
+SECURITY_QUESTION_INVALID_ANSWER_MESSAGE = "Incorrect answer to security question"
+
 
 class SecurityQuestionChoiceField(forms.ModelChoiceField):
     def label_from_instance(self, obj):
         return obj.question
-
-
-SECURITY_UNIQUE_VALIDATION_ERROR_MESSAGE = "Security questions need to be unique"
 
 
 class SignUpForm(UserCreationForm):
@@ -99,3 +101,49 @@ class ResetPasswordForm(forms.Form):
         if new_password_1 != new_password_2:
             raise ValidationError("The passwords must match")
         return new_password_2
+
+
+class ForgotPasswordSecurityQuestionsForm(forms.Form):
+    security_question_1_answer = forms.CharField(max_length=250)
+    security_question_2_answer = forms.CharField(max_length=250)
+    security_question_3_answer = forms.CharField(max_length=250)
+
+    def __init__(self, *args, **kwargs):
+        self.email = kwargs.pop('email', None)
+        if self.email is not None:
+            user = AppUser.objects.filter(email=self.email).first()
+            self.user = user
+            security_questions = self.user.security_questions.all()
+            for i in range(len(security_questions)):
+                security_question = security_questions[i]
+                security_question_field_key = 'security_question_{}_answer'.format(i + 1)
+                self.base_fields[security_question_field_key].label = security_question.question
+                self.base_fields[security_question_field_key].value = security_question.id
+        super(ForgotPasswordSecurityQuestionsForm, self).__init__(*args, **kwargs)
+
+    def _check_if_answer_is_valid(self, answer, index):
+        security_questions = self.user.security_questions.all()
+        security_question = security_questions[index]
+        security_question_inter = SecurityQuestionInter.objects.get(
+            user=self.user,
+            security_question_id=security_question.id
+        )
+        return security_question_inter.is_valid_answer(answer)
+
+    def clean_security_question_1_answer(self):
+        answer = self.cleaned_data['security_question_1_answer']
+        if not self._check_if_answer_is_valid(answer, 0):
+            raise ValidationError(SECURITY_QUESTION_INVALID_ANSWER_MESSAGE)
+        return answer
+
+    def clean_security_question_2_answer(self):
+        answer = self.cleaned_data['security_question_2_answer']
+        if not self._check_if_answer_is_valid(answer, 1):
+            raise ValidationError(SECURITY_QUESTION_INVALID_ANSWER_MESSAGE)
+        return answer
+
+    def clean_security_question_3_answer(self):
+        answer = self.cleaned_data['security_question_3_answer']
+        if not self._check_if_answer_is_valid(answer, 2):
+            raise ValidationError(SECURITY_QUESTION_INVALID_ANSWER_MESSAGE)
+        return answer

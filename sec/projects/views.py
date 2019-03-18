@@ -2,10 +2,10 @@ import os
 import stat
 
 from django.contrib.auth.decorators import login_required
-from django.http import HttpResponseRedirect
+from django.http import HttpResponseRedirect, Http404
 from django.shortcuts import render, redirect, get_object_or_404
-from django.views.decorators.csrf import csrf_exempt
 from django.views.generic import TemplateView
+from private_storage.views import PrivateStorageDetailView
 
 from user.models import Profile, AppUser
 from .forms import ProjectForm, TaskFileForm, ProjectStatusForm, TaskOfferForm, TaskOfferResponseForm, \
@@ -80,7 +80,7 @@ respond to deliveries, add members to a team and change team permission.
 but fails to check that the delivery belongs to that task.“
 """
 def project_view(request, project_id):
-    project = Project.objects.get(pk=project_id)
+    project = get_object_or_404(Project, pk=project_id)
     tasks = project.tasks.all()
     total_budget = sum(task.budget for task in tasks)
 
@@ -142,16 +142,10 @@ the file will be executed. This allows for arbitrary code execution
 on the server. Which may allow root access to the server to privilege
 escalation on the server.
 """
-# FIXME: Broken Access Control - Private media storage
-# TODO: Lookup django-private-storage or django-filer
-"""
-Users may open uploaded project files that they do not have permissions for, by
-entering the URL directly.
-"""
 @login_required
 def upload_file_to_task(request, project_id, task_id):
-    project = Project.objects.get(pk=project_id)
-    task = Task.objects.get(pk=task_id)
+    project = get_object_or_404(Project, pk=project_id)
+    task = get_object_or_404(Task, pk=task_id)
     user_permissions = get_user_task_permissions(request.user, task)
     accepted_task_offer = task.accepted_task_offer()
 
@@ -192,6 +186,9 @@ def upload_file_to_task(request, project_id, task_id):
                     messages.warning(request, "You do not have access to modify this file")
 
                 return redirect('task_view', project_id=project_id, task_id=task_id)
+            else:
+                from django.contrib import messages
+                messages.warning(request, task_file_form.errors['file'])
 
         task_file_form = TaskFileForm()
         return render(
@@ -262,8 +259,8 @@ something you will have to fix.
 @login_required
 def task_view(request, project_id, task_id):
     user = request.user
-    task = Task.objects.get(pk=task_id)
-    project = Project.objects.get(pk=project_id)
+    task = get_object_or_404(Task, pk=task_id)
+    project = get_object_or_404(Project, pk=project_id)
     accepted_task_offer = task.accepted_task_offer()
 
     user_permissions = get_user_task_permissions(request.user, task)
@@ -372,11 +369,10 @@ def task_view(request, project_id, task_id):
 @login_required
 def task_permissions(request, project_id, task_id):
     user = request.user
-    task = Task.objects.get(pk=task_id)
-    project = Project.objects.get(pk=project_id)
+    task = get_object_or_404(Task, pk=task_id)
+    project = get_object_or_404(Project, pk=project_id)
     accepted_task_offer = task.accepted_task_offer()
     if project.user == request.user.profile or user == accepted_task_offer.offerer.user:
-        task = Task.objects.get(pk=task_id)
         if int(project_id) == task.project.id:
             if request.method == 'POST':
                 task_permission_form = TaskPermissionForm(request.POST)
@@ -420,6 +416,64 @@ but fails to check that the delivery belongs to that task.“
 """
 @login_required
 def delete_file(request, file_id):
-    f = TaskFile.objects.get(pk=file_id)
+    # Check if user has modify access to file or modify privilege
+    user = request.user
+    f = get_object_or_404(TaskFile, pk=file_id)
+    task = Task.objects.get(pk=f.task_id)
+    team_ids = user.profile.teams.values_list('pk', flat=True)
+    has_delete_file_access = TaskFileTeam.objects.get_queryset().filter(team_id__in=team_ids, file_id=file_id, modify=True).exists()
+    user_permissions = get_user_task_permissions(user, task)
+
+    if not user_permissions['modify'] and not has_delete_file_access:
+        raise Http404()
+
     f.delete()
     return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
+
+
+class TaskFileDownloadView(PrivateStorageDetailView):
+    model = TaskFile
+    model_file_field = 'file'
+
+    def get_object(self, **kwargs):
+        # Check if user has read access to file or read privilege
+        user = self.request.user
+        task_id = self.kwargs['task_id']
+        task = Task.objects.get_object_or_404(pk=task_id)
+        team_ids = user.profile.teams.filter(task__id=task.id).values_list('pk', flat=True)
+        has_read_file_access = TaskFileTeam.objects.get_queryset().filter(team_id__in=team_ids, read=True).exists()
+        user_permissions = get_user_task_permissions(user, task)
+        if not user_permissions['read'] and not has_read_file_access:
+            raise Http404()
+
+        # Fetch and return file
+        file = self.request.path.replace("/projects/", "")
+        obj = get_object_or_404(TaskFile, file=file)
+        return obj
+
+    def can_access_file(self, private_file):
+        # When the object can be accessed, the file may be downloaded.
+        # This overrides PRIVATE_STORAGE_AUTH_FUNCTION
+        return True
+
+class DeliveryFileDownloadView(PrivateStorageDetailView):
+    model = Delivery
+    model_file_field = 'file'
+
+    def get_object(self, **kwargs):
+        # Check if user is project owner
+        user = self.request.user
+        task_id = self.kwargs['task_id']
+        task = Task.objects.get_object_or_404(pk=task_id)
+        if user != task.project.user.user and user != task.accepted_task_offer().offerer.user:
+            raise Http404()
+
+        # Fetch and return file
+        file = self.request.path.replace("/projects/", "")
+        obj = get_object_or_404(Delivery, file=file)
+        return obj
+
+    def can_access_file(self, private_file):
+        # When the object can be accessed, the file may be downloaded.
+        # This overrides PRIVATE_STORAGE_AUTH_FUNCTION
+        return True

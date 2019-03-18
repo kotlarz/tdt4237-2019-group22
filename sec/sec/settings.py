@@ -9,7 +9,7 @@ https://docs.djangoproject.com/en/2.0/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/2.0/ref/settings/
 """
-
+import datetime
 import logging
 import os
 import sys
@@ -25,18 +25,10 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 # FIXME: Replace in production
 SECRET_KEY = '$n%^#g%qx#82w6t^dvjqwv)q*1cy+fwh1ohku7-rbjqcei2^jr'
 
-# SECURITY WARNING: don't run with debug turned on in production!
-# FIXME: Security Misconfiguration - Set to False in production
-"""
-The application is running in debug mode, meaning that an attacker
-can gain valuable information from the stack traces shown when
-an internal server error occurs.
-Update: The cookie attributes are configured insecured,
-making it easier for an attacker to steal the cookie.
-"""
-DEBUG = True
 
 ALLOWED_HOSTS = ['127.0.0.1', 'localhost', 'tdt4237.idi.ntnu.no']
+
+DEBUG = False
 
 # Application definition
 
@@ -54,21 +46,74 @@ INSTALLED_APPS = [
     'bootstrap4',
     'django_icons',
     'payment.apps.PaymentConfig',
+    'axes',
+    'private_storage',
 ]
 
-# FIXME: Security Misconfiguration - Remove, server2 header, etc. in production (InformationMiddleware)
+CACHES = {
+    'default': {
+        'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
+    },
+    'axes_cache': {
+        'BACKEND': 'django.core.cache.backends.dummy.DummyCache',
+    }
+}
+
+AUTHENTICATION_BACKENDS = [
+    'axes.backends.AxesModelBackend',
+    'django.contrib.auth.backends.ModelBackend',
+]
+
+# Write 'python3 sec/manage.py axes_reset' to reset lockout.
+AXES_FAILURE_LIMIT = 4
+# Lockout for 1 hours
+AXES_COOLOFF_TIME = datetime.timedelta(hours=1)
+# If login is successful before being locked out, the counter is reset.
+AXES_RESET_ON_SUCCESS = True
+AXES_CACHE = 'axes_cache'
+AXES_LOCKOUT_TEMPLATE = 'user/locked_out.html'
+# For nginx:
+AXES_PROXY_COUNT = 1
+
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'handlers': {
+        'file': {
+            'level': os.getenv('DJANGO_LOG_LEVEL', 'DEBUG'),
+            'class': 'logging.FileHandler',
+            'filename': os.path.join(BASE_DIR, 'beelance.log'),
+        },
+    },
+    'loggers': {
+        'django': {
+            'handlers': ['file'],
+            'level': os.getenv('DJANGO_LOG_LEVEL', 'DEBUG'),
+            'propagate': True,
+        },
+        'axes.watch_login': {
+            'handlers': ['file'],
+            'level': os.getenv('DJANGO_LOG_LEVEL', 'DEBUG'),
+            'propagate': True,
+        },
+    },
+}
+
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
-    'sec.middleware.SimpleSessionMiddleware',
+    'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    'sec.middleware.InformationMiddleware',
 ]
-
 X_FRAME_OPTIONS = 'DENY'
+# The session expires in one week, half of the default value
+SESSION_COOKIE_AGE = 1209600 / 2
+# Ports for cookie domains is not possible, see: https://code.djangoproject.com/ticket/2806
+SESSION_COOKIE_DOMAIN = 'tdt4237.idi.ntnu.no'
+SESSION_COOKIE_HTTPONLY = True
 
 ROOT_URLCONF = 'sec.urls'
 
@@ -145,21 +190,33 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/2.0/howto/static-files/
 STATIC_URL = '/static/'
 STATIC_ROOT = os.path.join(BASE_DIR, "static")
-# FIXME: Broken Access Control - Private media storage
-# TODO: Lookup django-private-storage or django-filer
-"""
-Users may open uploaded project files that they do not have permissions for, by
-entering the URL directly.
-"""
-MEDIA_ROOT = os.path.join(BASE_DIR, "media")
-MEDIA_URL = "/media/"
 
+# Media files
+MEDIA_ROOT = os.path.join(BASE_DIR, "projects")
+MEDIA_URL = "/projects/"
+
+PRIVATE_STORAGE_ROOT = MEDIA_ROOT
+PRIVATE_STORAGE_AUTH_FUNCTION = 'private_storage.permissions.allow_staff'
+
+MIMETYPES = ['application/pdf', 'text/csv', 'application/msword', 'image/jpeg',
+             'image/png', 'application/vnd.ms-powerpoint', 'application/vnd.ms-excel']
+MAX_FILE_SIZE = 5000000
 
 # Adds X-Content-Type-Options: nosniff
 SECURE_CONTENT_TYPE_NOSNIFF = True
 
 
-EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+
+
+# Password reset token generator timeout
+PASSWORD_RESET_TIMEOUT_DAYS = 1
+
+# Site URL
+SITE_URL = "http://tdt4237.idi.ntnu.no:4022"
+
+# Default password for superuser
+DEFAULT_ADMIN_PASSWORD = 'besteProgSikGruppAnoenSinNe4'
 
 try:
     from .local_settings import *

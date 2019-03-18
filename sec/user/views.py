@@ -1,61 +1,63 @@
-from django.contrib.auth import authenticate, login
-from django.contrib.auth.hashers import check_password
+from axes.decorators import axes_dispatch
+from django.contrib.auth import authenticate, login, logout
 from django.contrib.sessions.backends.cache import SessionStore
 from django.core.exceptions import ValidationError
 from django.http import HttpResponseRedirect
+from django.shortcuts import render
 from django.urls import reverse_lazy
+from django.utils.decorators import method_decorator
 from django.views.generic import TemplateView, CreateView, FormView
+from django.utils.encoding import force_text
+from django.utils.http import urlsafe_base64_decode
+from formtools.wizard.views import SessionWizardView
+from user.models import SecurityQuestionInter, AppUser
 
-from user.models import SecurityQuestionInter
+from .tokens import account_activation_token
+from .forms import SignUpForm, LoginForm, ForgotPasswordForm, ForgotPasswordSecurityQuestionsForm, \
+    ResetPasswordForm
 
-from user.models import AppUser
-from .forms import SignUpForm, LoginForm, ForgotPasswordForm, ResetPasswordForm
+
+def custom_logout(request):
+    logout(request)
+    request.session = SessionStore()
+    return HttpResponseRedirect(reverse_lazy("home"))
+
+
+def activate(request, uidb64, token, backend='django.contrib.auth.backends.ModelBackend'):
+    try:
+        uid = force_text(urlsafe_base64_decode(uidb64))
+        user = AppUser.objects.get(pk=uid)
+    except(TypeError, ValueError, OverflowError, AppUser.DoesNotExist):
+        user = None
+
+    if user is not None and account_activation_token.check_token(user, token):
+        user.is_active = True
+        user.save()
+        login(request, user, backend=backend)
+        return HttpResponseRedirect(reverse_lazy("home"))
+    else:
+        user.send_activation_mail()
+        return render(request, 'user/activation_expired.html')
 
 
 class IndexView(TemplateView):
     template_name = "sec/base.html"
 
 
-# FIXME: No Session Expiration - Invalidate session on logout
-"""
-Sessions have virtually no expiration (~70 years).
-Neither is the session invalidated on logout.
-"""
-def logout(request):
-    request.session = SessionStore()
-    return HttpResponseRedirect(reverse_lazy("home"))
-
-
-# FIXME: No Session Renewal - Rewnew on login
-"""
-Sessions are not renewed on login. In addition, the same session id is shared
-between all sessions for a single user. This means that, together with no session
-expiration, if an attacker gains access to the session of a user, the attacker
-will have permanent access to the user
-"""
+@method_decorator(axes_dispatch, name='dispatch')
 class LoginView(FormView):
     form_class = LoginForm
     template_name = "user/login.html"
     success_url = reverse_lazy("home")
 
-    # FIXME: No Login Throttling/No Lockout Mechanism
-    # TODO: Lookup django-axes or django-ratelimit.
-    """
-    Neither login throttling, nor a lockout mechanism is implemented.
-    Making it very simple for an attacker to perform brute force attacks
-    on the login page.
-    """
-    # FIXME: Insufficient logging and monitoring (Top 10-2017 A10):
-    """
-    Exploitation of insufficient logging and monitoring is the bedrock of nearly
-    every major incident. Attackers rely on the lack of monitoring and timely
-    response to achieve their goals without being detected.
-    All group should add logging of failed login attempts.
-    """
     def form_valid(self, form):
         username = form.cleaned_data["username"]
         password = form.cleaned_data["password"]
-        user = authenticate(username=username, password=password)
+        user = authenticate(
+            request=self.request,
+            username=username,
+            password=password,
+        )
         if user is not None:
             login(self.request, user)
             user.temporary_password = None
@@ -98,16 +100,17 @@ class SignupView(CreateView):
             security_question = security_questions[i]
             security_question_answer = security_question_answers[i]
             SecurityQuestionInter.objects.create(
-                profile=user.profile,
+                user=user,
                 security_question=security_question,
                 answer=security_question_answer
             )
         user.profile.company = form.cleaned_data.get("company")
         user.profile.categories.add(*form.cleaned_data["categories"])
+        user.is_active = False
         user.save()
-        login(self.request, user)
+        user.send_activation_mail()
 
-        return HttpResponseRedirect(self.success_url)
+        return render(self.request, 'user/signup_done.html')
 
 
 class ResetPasswordView(FormView):
@@ -126,11 +129,21 @@ class ResetPasswordView(FormView):
         raise ValidationError("The entered temporary password is wrong")
 
 
-class ForgotPasswordView(FormView):
-    form_class = ForgotPasswordForm
+class ForgotPasswordWizardView(SessionWizardView):
+    form_list = [ForgotPasswordForm, ForgotPasswordSecurityQuestionsForm]
     template_name = "user/forgot_password.html"
-    success_url = reverse_lazy("home")
 
-    def form_valid(self, form):
-        # TODO: add logic
-        return HttpResponseRedirect(self.success_url)
+    def done(self, form_list, **kwargs):
+        email_form = list(form_list)[0]
+        user = AppUser.objects.filter(email=email_form.cleaned_data['email']).first()
+        temporary_password = AppUser.objects.make_random_password()
+        user.set_temporary_password(temporary_password)
+        user.send_temporary_password_email(temporary_password)
+        return render(self.request, 'user/forgot_password_done.html')
+
+    def get_form_kwargs(self, step=None):
+        kwargs = {}
+        if step == '1':
+            email = self.get_cleaned_data_for_step('0')['email']
+            kwargs.update({'email': email, })
+        return kwargs

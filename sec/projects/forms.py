@@ -1,6 +1,5 @@
 from django import forms
 from .models import Project, TaskFile, TaskOffer, Delivery, ProjectCategory, Team
-from django.contrib.auth.models import User
 from user.models import Profile
 
 
@@ -15,8 +14,6 @@ class ProjectForm(forms.ModelForm):
 
 
 class TaskFileForm(forms.ModelForm):
-    file = forms.FileField()
-
     class Meta:
         model = TaskFile
         fields = ('file',)
@@ -72,8 +69,6 @@ class TaskPermissionForm(forms.Form):
 
 class DeliveryForm(forms.ModelForm):
     comment = forms.Textarea()
-    file = forms.FileField()
-
     class Meta:
         model = Delivery
         fields = ('comment', 'file')
