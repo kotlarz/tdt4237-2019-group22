@@ -1,4 +1,5 @@
 from django.shortcuts import render, redirect, get_object_or_404
+from django.http import Http404
 from django.views.generic import TemplateView, CreateView, FormView
 
 from projects.models import Project, Task
@@ -11,6 +12,10 @@ def payment(request, project_id, task_id):
     project = get_object_or_404(Project, pk=project_id)
     task = get_object_or_404(Task, pk=task_id)
     sender = project.user
+    user = request.user.profile
+    if (user != sender):
+        raise Http404()
+
     receiver = get_accepted_task_offer(task).offerer
 
     if request.method == 'POST':
@@ -30,6 +35,11 @@ class ReceiptView(TemplateView):
         context_data = super().get_context_data(**kwargs)
         task = get_object_or_404(Task, pk=task_id)
         project = get_object_or_404(Project, pk=project_id)
+        user = self.request.user
+        accepted_task_offer = task.accepted_task_offer()
+        if task.project.user != user.profile and user != accepted_task_offer.offerer.user:
+            raise Http404()
+
         context_data.update({
             "project": project,
             "task": task,
