@@ -1,4 +1,4 @@
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from django.views.generic import TemplateView, CreateView, FormView
 
 from projects.models import Project, Task
@@ -8,8 +8,9 @@ from .models import Payment
 
 
 def payment(request, project_id, task_id):
-    sender = Project.objects.get(pk=project_id).user
-    task = Task.objects.get(pk=task_id)
+    project = get_object_or_404(Project, pk=project_id)
+    task = get_object_or_404(Task, pk=task_id)
+    sender = project.user
     receiver = get_accepted_task_offer(task).offerer
 
     if request.method == 'POST':
@@ -27,9 +28,10 @@ class ReceiptView(TemplateView):
 
     def get_context_data(self, project_id, task_id, **kwargs):
         context_data = super().get_context_data(**kwargs)
-        task = Task.objects.get(pk=task_id)
+        task = get_object_or_404(Task, pk=task_id)
+        project = get_object_or_404(Project, pk=project_id)
         context_data.update({
-            "project": Project.objects.get(pk=project_id),
+            "project": project,
             "task": task,
             "taskoffer": get_accepted_task_offer(task),
         })
