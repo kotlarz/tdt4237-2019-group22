@@ -89,9 +89,9 @@ class ForgotPasswordForm(forms.Form):
 
 
 class ResetPasswordForm(forms.Form):
-    temporary_password = forms.CharField(widget=forms.TextInput(attrs={"type": "password"}))
-    new_password_1 = forms.CharField(widget=forms.TextInput(attrs={"type": "password"}))
-    new_password_2 = forms.CharField(widget=forms.TextInput(attrs={"type": "password"}))
+    temporary_password = forms.CharField(widget=forms.TextInput(attrs={"placeholder": "", "type": "password"}))
+    new_password_1 = forms.CharField(label="New Password", widget=forms.TextInput(attrs={"placeholder": "", "type": "password"}))
+    new_password_2 = forms.CharField(label="New Password (again)", widget=forms.TextInput(attrs={"placeholder": "", "type": "password"}))
 
     def clean_new_password_2(self):
         new_password_1 = self.cleaned_data["new_password_1"]
