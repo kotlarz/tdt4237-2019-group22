@@ -186,6 +186,9 @@ def upload_file_to_task(request, project_id, task_id):
                     messages.warning(request, "You do not have access to modify this file")
 
                 return redirect('task_view', project_id=project_id, task_id=task_id)
+            else:
+                from django.contrib import messages
+                messages.warning(request, task_file_form.errors['file'])
 
         task_file_form = TaskFileForm()
         return render(

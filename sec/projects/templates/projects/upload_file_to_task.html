@@ -13,6 +13,7 @@
     <form enctype="multipart/form-data" method="post">
         {% csrf_token %}
         {% bootstrap_form task_file_form %}
+        <p>Allowed filetypes: PDF, CSV, JPEG, PNG, MS Word, MS PowerPoint, MS Excel </p>
         <button type="submit" class="btn btn-primary">Upload File</button>
     </form>
 {% endblock %}
