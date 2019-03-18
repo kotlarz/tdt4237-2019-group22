@@ -16,7 +16,6 @@ WORKDIR /usr/src/app
 
 COPY requirements.txt ./
 COPY static $NGINX_DIR/static
-COPY media $NGINX_DIR/media
 
 RUN pip3 install --no-cache-dir -r requirements.txt
 

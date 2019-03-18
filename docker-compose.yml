@@ -11,8 +11,7 @@ services:
       - sec
     volumes:
       - ./nginx-configuration-file:/etc/nginx/conf.d/default.conf
-      -  ./static:/home/www-data/group22/static
-      -  ./media:/home/www-data/group22/media
+      - ./static:/home/www-data/group22/static
 
   sec:
     build: .
@@ -26,7 +25,6 @@ services:
     volumes:
       - ./sec:/usr/src/app/sec
       - ./static:/usr/src/app/sec/static
-      - ./media:/usr/src/app/sec/media
 
 networks:
   sec:
