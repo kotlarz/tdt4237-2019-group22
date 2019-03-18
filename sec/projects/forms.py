@@ -58,7 +58,7 @@ PERMISSION_CHOICES = (
 )
 
 class TaskPermissionForm(forms.Form):
-    user = forms.ModelChoiceField(queryset=None)
+    user = forms.ModelChoiceField(queryset=Profile.objects.none())
     permission = forms.ChoiceField(choices=PERMISSION_CHOICES)
 
 

@@ -375,7 +375,7 @@ def task_permissions(request, project_id, task_id):
     if project.user == request.user.profile or user == accepted_task_offer.offerer.user:
         if int(project_id) == task.project.id:
             if request.method == 'POST':
-                task_permission_form = TaskPermissionForm(request.POST)
+                task_permission_form = TaskPermissionForm(request.POST, task_id=task_id)
                 if task_permission_form.is_valid():
                     try:
                         username = task_permission_form.cleaned_data['user']
