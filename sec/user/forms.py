@@ -16,7 +16,8 @@ class SecurityQuestionChoiceField(forms.ModelChoiceField):
 
 
 class SignUpForm(UserCreationForm):
-    company = forms.CharField(max_length=30, required=False, help_text='Here you can add your company.')
+    company = forms.CharField(
+        max_length=30, required=False, help_text='Here you can add your company.')
     phone_number = forms.CharField(max_length=50)
 
     street_address = forms.CharField(max_length=50)
@@ -25,7 +26,8 @@ class SignUpForm(UserCreationForm):
     postal_code = forms.CharField(max_length=50)
     country = forms.CharField(max_length=50)
 
-    email = forms.EmailField(max_length=254, help_text='Inform a valid email address.')
+    email = forms.EmailField(
+        max_length=254, help_text='Inform a valid email address.')
     categories = forms.ModelMultipleChoiceField(queryset=ProjectCategory.objects.all(),
                                                 help_text='Hold down "Control", or "Command" on a Mac, to select more than one.',
                                                 required=False)
@@ -74,7 +76,8 @@ class SignUpForm(UserCreationForm):
 class LoginForm(forms.Form):
     username = forms.CharField(required=True)
     # TODO: Implement zxcvbn? https://blogs.dropbox.com/tech/2012/04/zxcvbn-realistic-password-strength-estimation/
-    password = forms.CharField(required=True, widget=forms.TextInput(attrs={"type": "password"}))
+    password = forms.CharField(required=True, widget=forms.TextInput(
+        attrs={"type": "password", "autocomplete": "new-password"}))
 
 
 class ForgotPasswordForm(forms.Form):
@@ -87,7 +90,8 @@ class ForgotPasswordForm(forms.Form):
             # This is really against security rules,
             # you should never let anyone know if a user exists or not
             # TODO: Throttle?
-            raise ValidationError("A user with the provided email does not exists")
+            raise ValidationError(
+                "A user with the provided email does not exists")
         return email
 
 
@@ -117,10 +121,12 @@ class ForgotPasswordSecurityQuestionsForm(forms.Form):
             security_questions = self.user.security_questions.all()
             for i in range(len(security_questions)):
                 security_question = security_questions[i]
-                security_question_field_key = 'security_question_{}_answer'.format(i + 1)
+                security_question_field_key = 'security_question_{}_answer'.format(
+                    i + 1)
                 self.base_fields[security_question_field_key].label = security_question.question
                 self.base_fields[security_question_field_key].value = security_question.id
-        super(ForgotPasswordSecurityQuestionsForm, self).__init__(*args, **kwargs)
+        super(ForgotPasswordSecurityQuestionsForm,
+              self).__init__(*args, **kwargs)
 
     def _check_if_answer_is_valid(self, answer, index):
         security_questions = self.user.security_questions.all()
