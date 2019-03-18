@@ -7,7 +7,8 @@ from django.db import models
 
 from user.models import Profile
 
-from projects.validators import validate_file_extension
+from projects.validators import validate_file_extension, validate_file_size
+
 
 
 class OverwriteStorage(FileSystemStorage):
@@ -121,7 +122,9 @@ def delivery_path(instance, filename):
 
 class TaskFile(models.Model):
     task = models.ForeignKey(Task, on_delete=models.CASCADE, related_name="files")
-    file = PrivateFileField(upload_to=directory_path, storage=OverwriteStorage(), validators=[validate_file_extension])
+    file = PrivateFileField(upload_to=directory_path,
+                            storage=OverwriteStorage(),
+                            validators=[validate_file_extension, validate_file_size])
 
     def name(self):
         parts = self.file.path.split("/")
@@ -140,7 +143,7 @@ class TaskFileTeam(models.Model):
 
 class Delivery(models.Model):
     task = models.ForeignKey(Task, on_delete=models.CASCADE, related_name="delivery")
-    file = PrivateFileField(upload_to=delivery_path, validators=[validate_file_extension])
+    file = PrivateFileField(upload_to=delivery_path, validators=[validate_file_extension, validate_file_size])
     comment = models.TextField(max_length=500)
     delivery_user = models.ForeignKey(Profile, on_delete=models.CASCADE, related_name="deliveries")
     delivery_time = models.DateTimeField(auto_now=True)

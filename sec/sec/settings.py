@@ -200,6 +200,7 @@ PRIVATE_STORAGE_AUTH_FUNCTION = 'private_storage.permissions.allow_staff'
 
 MIMETYPES = ['application/pdf', 'text/csv', 'application/msword', 'image/jpeg',
              'image/png', 'application/vnd.ms-powerpoint', 'application/vnd.ms-excel']
+MAX_FILE_SIZE = 5000000
 
 # Adds X-Content-Type-Options: nosniff
 SECURE_CONTENT_TYPE_NOSNIFF = True
