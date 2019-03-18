@@ -1,6 +1,7 @@
 from axes.decorators import axes_dispatch
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.sessions.backends.cache import SessionStore
+from django.core.exceptions import ValidationError
 from django.http import HttpResponseRedirect
 from django.shortcuts import render
 from django.urls import reverse_lazy
@@ -12,7 +13,8 @@ from formtools.wizard.views import SessionWizardView
 from user.models import SecurityQuestionInter, AppUser
 
 from .tokens import account_activation_token
-from .forms import SignUpForm, LoginForm, ForgotPasswordForm, ForgotPasswordSecurityQuestionsForm
+from .forms import SignUpForm, LoginForm, ForgotPasswordForm, ForgotPasswordSecurityQuestionsForm, \
+    ResetPasswordForm
 
 
 def custom_logout(request):
@@ -49,17 +51,28 @@ class LoginView(FormView):
     success_url = reverse_lazy("home")
 
     def form_valid(self, form):
+        username = form.cleaned_data["username"]
+        password = form.cleaned_data["password"]
         user = authenticate(
             request=self.request,
-            username=form.cleaned_data["username"],
-            password=form.cleaned_data["password"]
+            username=username,
+            password=password,
         )
         if user is not None:
             login(self.request, user)
-            return super().form_valid(form)
-        else:
-            form.add_error(None, "Provide a valid username and/or password")
-            return super().form_invalid(form)
+            user.temporary_password = None
+            user.save()
+            return super(LoginView, self).form_valid(form)
+
+        user = AppUser.objects.get(username=username)
+        if user is not None \
+                and user.temporary_password is not None \
+                and user.check_temporary_password(raw_password=password):
+            self.request.session["username"] = form.cleaned_data["username"]
+            return HttpResponseRedirect(reverse_lazy("reset_password"))
+
+        form.add_error(None, "Provide a valid username and/or password")
+        return super(LoginView, self).form_invalid(form)
 
 
 class SignupView(CreateView):
@@ -96,10 +109,28 @@ class SignupView(CreateView):
         user.profile.categories.add(*form.cleaned_data["categories"])
         user.is_active = False
         user.save()
-
         user.send_activation_mail()
 
         return render(self.request, 'user/signup_done.html')
+
+
+class ResetPasswordView(FormView):
+    form_class = ResetPasswordForm
+    template_name = "user/reset_password.html"
+    success_url = reverse_lazy("home")
+
+    def form_valid(self, form):
+        username = self.request.session["username"]
+        temporary_password = form.cleaned_data.get("temporary_password")
+        user = AppUser.objects.get(username=username)
+        if user.check_temporary_password(temporary_password):
+            user.set_password(form.cleaned_data.get("new_password_2"))
+            user.temporary_password = None
+            user.save()
+            del self.request.session['username']
+            login(self.request, user, backend='django.contrib.auth.backends.ModelBackend')
+            return HttpResponseRedirect(self.success_url)
+        raise ValidationError("The entered temporary password is wrong")
 
 
 class ForgotPasswordWizardView(SessionWizardView):

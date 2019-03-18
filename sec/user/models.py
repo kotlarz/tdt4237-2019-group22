@@ -1,3 +1,4 @@
+from django.conf import settings
 from django.contrib.auth.hashers import make_password, check_password
 from django.contrib.auth.models import AbstractUser
 from django.contrib.sessions.models import Session
@@ -9,7 +10,6 @@ from django.template.loader import render_to_string
 from django.utils.encoding import force_bytes
 from django.utils.http import urlsafe_base64_encode
 
-from sec import settings
 from user.tokens import account_activation_token
 
 
@@ -31,6 +31,8 @@ class AppUser(AbstractUser):
         self.save()
 
     def check_temporary_password(self, raw_password):
+        if self.temporary_password is None:
+            return False
         return check_password(raw_password, self.temporary_password)
 
     def send_temporary_password_email(self, temporary_password):

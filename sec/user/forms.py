@@ -1,18 +1,18 @@
 from django import forms
 from django.contrib.auth.forms import UserCreationForm
 from django.core.exceptions import ValidationError
+from django.forms import PasswordInput
 
 from projects.models import ProjectCategory
 from user.models import SecurityQuestion, AppUser, SecurityQuestionInter
+
+SECURITY_UNIQUE_VALIDATION_ERROR_MESSAGE = "Security questions need to be unique"
+SECURITY_QUESTION_INVALID_ANSWER_MESSAGE = "Incorrect answer to security question"
 
 
 class SecurityQuestionChoiceField(forms.ModelChoiceField):
     def label_from_instance(self, obj):
         return obj.question
-
-
-SECURITY_UNIQUE_VALIDATION_ERROR_MESSAGE = "Security questions need to be unique"
-SECURITY_QUESTION_INVALID_ANSWER_MESSAGE = "Incorrect answer to security question"
 
 
 class SignUpForm(UserCreationForm):
@@ -73,7 +73,6 @@ class SignUpForm(UserCreationForm):
 
 class LoginForm(forms.Form):
     username = forms.CharField(required=True)
-
     # TODO: Implement zxcvbn? https://blogs.dropbox.com/tech/2012/04/zxcvbn-realistic-password-strength-estimation/
     password = forms.CharField(required=True, widget=forms.TextInput(attrs={"type": "password"}))
 
@@ -90,6 +89,19 @@ class ForgotPasswordForm(forms.Form):
             # TODO: Throttle?
             raise ValidationError("A user with the provided email does not exists")
         return email
+
+
+class ResetPasswordForm(forms.Form):
+    temporary_password = forms.CharField(widget=PasswordInput)
+    new_password_1 = forms.CharField(label="New Password", widget=PasswordInput)
+    new_password_2 = forms.CharField(label="New Password (again)", widget=PasswordInput)
+
+    def clean_new_password_2(self):
+        new_password_1 = self.cleaned_data["new_password_1"]
+        new_password_2 = self.cleaned_data["new_password_2"]
+        if new_password_1 != new_password_2:
+            raise ValidationError("The passwords must match")
+        return new_password_2
 
 
 class ForgotPasswordSecurityQuestionsForm(forms.Form):
