@@ -74,7 +74,7 @@ class SignUpForm(UserCreationForm):
 class LoginForm(forms.Form):
     username = forms.CharField(required=True)
     # TODO: Implement zxcvbn? https://blogs.dropbox.com/tech/2012/04/zxcvbn-realistic-password-strength-estimation/
-    password = forms.CharField(required=True, widget=forms.PasswordInput( attrs={"type": "password", "autocomplete": "new-password"}))
+    password = forms.CharField(required=True, widget=forms.PasswordInput(attrs={"autocomplete": "new-password"}))
 
 
 class ForgotPasswordForm(forms.Form):
