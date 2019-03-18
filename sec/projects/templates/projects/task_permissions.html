@@ -11,6 +11,7 @@
 
     <h3>Task: {{ task.title }}</h3>
     <form enctype="multipart/form-data" method="post">
+        {% csrf_token %}
         {% bootstrap_form form %}
         <button type="submit">Give permission</button>
     </form>
