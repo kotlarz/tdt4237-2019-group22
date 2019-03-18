@@ -11,12 +11,24 @@ Create a virtualenv https://docs.python-guide.org/dev/virtualenvs/
 
 ## Local setup
 
+### Environment variables
+The application requires the following environment variables to be set
+* BEELANCE_SECRET_KEY
+* BEELANCE_EMAIL_HOST
+* BEELANCE_EMAIL_HOST_USER
+* BEELANCE_EMAIL_HOST_PASSWORD
+* BEELANCE_EMAIL_PORT
+* BEELANCE_DEFAULT_ADMIN_PASSWORD
+
 ### Setup with Docker
 Install Docker and Docker Compose if you haven't already done so.
 
 Clone the project to your machine.
 
-Run `docker-compose up` inside the main folder.
+Run `docker-compose up` inside the main folder with environment variables set, example:
+
+`BEELANCE_SECRET_KEY=my_secret_key BEELANCE_EMAIL_HOST=my_email_host BEELANCE_EMAIL_HOST_USER=my_email_host_user BEELANCE_EMAIL_HOST_PASSWORD=my_email_password BEELANCE_EMAIL_PORT=my_port BEELANCE_DEFAULT_ADMIN_PASSWORD=my_admin_password docker-compose up`
+
 
 ### Installation with examples for ubuntu. Windows and OSX is mostly the same
 
@@ -52,18 +64,8 @@ Only username and password is required
 
 #### Start the app
 
-`python sec/manage.py runserver`
+Run `python sec/manage.py runserver` inside the main folder with environment variables set, example:
 
-##### Environment variables
-The application requires the following environment variables to be set
-* BEELANCE_SECRET_KEY
-* BEELANCE_EMAIL_HOST
-* BEELANCE_EMAIL_HOST_USER
-* BEELANCE_EMAIL_HOST_PASSWORD
-* BEELANCE_EMAIL_PORT
-* BEELANCE_DEFAULT_ADMIN_PASSWORD
-
-Example:
 `BEELANCE_SECRET_KEY=my_secret_key BEELANCE_EMAIL_HOST=my_email_host BEELANCE_EMAIL_HOST_USER=my_email_host_user BEELANCE_EMAIL_HOST_PASSWORD=my_email_password BEELANCE_EMAIL_PORT=my_port BEELANCE_DEFAULT_ADMIN_PASSWORD=my_admin_password python sec/manage.py runserver`
 
 #### Add initial data
