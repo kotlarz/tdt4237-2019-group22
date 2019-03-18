@@ -1,6 +1,7 @@
 from django.contrib.auth import get_user_model
+from django.conf import settings
 
-password = "pass"
+password = settings.DEFAULT_ADMIN_PASSWORD
 
 User = get_user_model()
 admin = User.objects.filter(username="admin").first()
