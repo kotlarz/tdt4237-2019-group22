@@ -62,10 +62,11 @@ class TaskPermissionForm(forms.Form):
     permission = forms.ChoiceField(choices=PERMISSION_CHOICES)
 
 
-    def __init__(self, *args, project=None, **kwargs):
+    def __init__(self, *args, task_id=None, **kwargs):
         super().__init__(*args, **kwargs)
-        if project:
-            self.fields['user'].queryset = Project.objects.get(pk=project.pk).participants
+        if task_id:
+            self.fields['user'].queryset = Profile.objects\
+                .filter(teams__in=Team.objects.filter(task_id=task_id).values("pk"))
 
 class DeliveryForm(forms.ModelForm):
     comment = forms.Textarea()
