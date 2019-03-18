@@ -11,6 +11,8 @@ from django.utils.encoding import force_text
 from django.utils.http import urlsafe_base64_decode
 from formtools.wizard.views import SessionWizardView
 from user.models import SecurityQuestionInter, AppUser
+from django.contrib import messages
+
 
 from .tokens import account_activation_token
 from .forms import SignUpForm, LoginForm, ForgotPasswordForm, ForgotPasswordSecurityQuestionsForm, \
@@ -33,8 +35,8 @@ def activate(request, uidb64, token, backend='django.contrib.auth.backends.Model
     if user is not None and account_activation_token.check_token(user, token):
         user.is_active = True
         user.save()
-        login(request, user, backend=backend)
-        return HttpResponseRedirect(reverse_lazy("home"))
+        messages.success(request, 'Your account is now activated and you can log in.')
+        return HttpResponseRedirect(reverse_lazy("login"))
     else:
         user.send_activation_mail()
         return render(request, 'user/activation_expired.html')
